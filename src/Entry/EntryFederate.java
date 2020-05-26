@@ -4,16 +4,20 @@ import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
 import util.Federate;
 
-import java.io.File;
-import java.net.URL;
-
 public class EntryFederate extends Federate {
+    // EntryQueue object
     protected ObjectClassHandle entryQueueClassHandle;
-    protected AttributeHandle currentVehicleCountAttrHandle;
-    protected AttributeHandle maxVehiclesAttrHandle;
-    protected AttributeHandle earliestVehicleIdAttrHandle;
+    protected AttributeHandle entryQueueCurrentVehicleCountAttrHandle;
+    protected AttributeHandle entryQueueMaxVehiclesAttrHandle;
+    protected AttributeHandle entryQueueEarliestVehicleIdAttrHandle;
+
+    // NewClient interaction
     protected InteractionClassHandle newClientInteractHandle;
+    protected ParameterHandle newClientVehicleIdParamHandle;
+
+    // GetClientL1 interaction
     protected InteractionClassHandle getClientL1InteractHandle;
+    protected ParameterHandle getClientL1VehicleIdParamHandle;
 
     public EntryFederate(String name) {
         super(name);
@@ -24,26 +28,28 @@ public class EntryFederate extends Federate {
         // Publish and subscribe EntryQueue object
 
         this.entryQueueClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.EntryQueue");
-        this.currentVehicleCountAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "currentVehicleCount");
-        this.maxVehiclesAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "maxVehicles");
-        this.earliestVehicleIdAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "earliestVehicleId");
+        this.entryQueueCurrentVehicleCountAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "currentVehicleCount");
+        this.entryQueueMaxVehiclesAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "maxVehicles");
+        this.entryQueueEarliestVehicleIdAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "earliestVehicleId");
 
         AttributeHandleSet entryQueueAttributes = rtiamb.getAttributeHandleSetFactory().create();
-        entryQueueAttributes.add(this.currentVehicleCountAttrHandle);
-        entryQueueAttributes.add(this.maxVehiclesAttrHandle);
-        entryQueueAttributes.add(this.earliestVehicleIdAttrHandle);
+        entryQueueAttributes.add(this.entryQueueCurrentVehicleCountAttrHandle);
+        entryQueueAttributes.add(this.entryQueueMaxVehiclesAttrHandle);
+        entryQueueAttributes.add(this.entryQueueEarliestVehicleIdAttrHandle);
 
         rtiamb.publishObjectClassAttributes(this.entryQueueClassHandle, entryQueueAttributes);
         rtiamb.subscribeObjectClassAttributes(this.entryQueueClassHandle, entryQueueAttributes);
 
         // Subscribe NewClient interaction
 
-        this.newClientInteractHandle = rtiamb.getInteractionClassHandle("InteractionRoot.NewClient");
+        this.newClientInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.NewClient");
+        this.newClientVehicleIdParamHandle = rtiamb.getParameterHandle(this.newClientInteractHandle, "vehicleId");
         rtiamb.subscribeInteractionClass(this.newClientInteractHandle);
 
         // Subscribe GetClientL1 interaction
 
-        this.getClientL1InteractHandle = rtiamb.getInteractionClassHandle("InteractionRoot.GetClientL1");
+        this.getClientL1InteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.GetClientL1");
+        this.getClientL1VehicleIdParamHandle = rtiamb.getParameterHandle(this.newClientInteractHandle, "vehicleId");
         rtiamb.subscribeInteractionClass(this.getClientL1InteractHandle);
 
 
