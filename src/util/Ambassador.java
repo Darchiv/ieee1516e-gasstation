@@ -1,8 +1,8 @@
 package util;
 
-import hla.rti1516e.FederateHandleSet;
-import hla.rti1516e.NullFederateAmbassador;
-import hla.rti1516e.SynchronizationPointFailureReason;
+import hla.rti1516e.*;
+import hla.rti1516e.exceptions.FederateInternalError;
+import hla.rti1516e.time.HLAfloat64Time;
 
 public abstract class Ambassador extends NullFederateAmbassador {
     private Logger logger;
@@ -10,6 +10,11 @@ public abstract class Ambassador extends NullFederateAmbassador {
 
     protected boolean isAnnounced = false;
     protected boolean isReadyToRun = false;
+
+    protected boolean isAdvancing = false;
+
+    protected double federateTime = 0.0;
+    protected double federateLookahead = 1.0;
 
     public Ambassador(String name) {
         this.name = name;
@@ -39,6 +44,25 @@ public abstract class Ambassador extends NullFederateAmbassador {
         this.log("Federation Synchronized: " + label);
         if (label.equals(Federate.READY_TO_RUN))
             this.isReadyToRun = true;
+    }
+
+    @Override
+    public void timeAdvanceGrant(LogicalTime time) {
+        this.federateTime = ((HLAfloat64Time) time).getValue();
+        this.isAdvancing = false;
+    }
+
+    @Override
+    public void removeObjectInstance(ObjectInstanceHandle theObject,
+                                     byte[] tag,
+                                     OrderType sentOrdering,
+                                     SupplementalRemoveInfo removeInfo)
+            throws FederateInternalError {
+        log("Object Removed: handle=" + theObject);
+    }
+
+    public double getFederateTime() {
+        return this.federateTime;
     }
 
     protected void log(String message) {

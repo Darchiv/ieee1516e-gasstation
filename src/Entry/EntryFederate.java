@@ -1,9 +1,6 @@
 package Entry;
 
-import hla.rti1516e.AttributeHandle;
-import hla.rti1516e.AttributeHandleSet;
-import hla.rti1516e.InteractionClassHandle;
-import hla.rti1516e.ObjectClassHandle;
+import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
 import util.Federate;
 
@@ -11,8 +8,6 @@ import java.io.File;
 import java.net.URL;
 
 public class EntryFederate extends Federate {
-    private EntryFederateAmbassador fedamb;
-
     protected ObjectClassHandle entryQueueClassHandle;
     protected AttributeHandle currentVehicleCountAttrHandle;
     protected AttributeHandle maxVehiclesAttrHandle;
@@ -55,63 +50,31 @@ public class EntryFederate extends Federate {
         this.log("Published and Subscribed");
     }
 
-    protected void runSimulation() {
-//        TODO: Implement
+    protected void runSimulation() throws RTIexception {
+        // Register (create) a new instance of EntryQueue
+        ObjectInstanceHandle entryQueue = rtiamb.registerObjectInstance(entryQueueClassHandle);
+        log("Registered Object, handle=" + entryQueue);
 
-//        ObjectInstanceHandle objectHandle = registerObject();
-//        log( "Registered Object, handle=" + objectHandle );
-//
-//        for( int i = 0; i < ITERATIONS; i++ )
-//        {
-//            // 9.1 update the attribute values of the instance //
+        for (int i = 0; i < ITERATIONS; i++) {
+            // 9.1 update the attribute values of the instance //
 //            updateAttributeValues( objectHandle );
 //
 //            // 9.2 send an interaction
 //            sendInteraction();
-//
-//            // 9.3 request a time advance and wait until we get it
-//            advanceTime( 1.0 );
-//            log( "Time Advanced to " + fedamb.federateTime );
-//        }
-//        deleteObject( objectHandle );
-//        log( "Deleted Object, handle=" + objectHandle );
-    }
 
-    //    TODO: Move runFederate into Federate
-    public void runFederate(String federateName) throws Exception {
-        this.createAmbassador();
-        // TODO: Move fedamb into Federate (via constructor)
-        this.fedamb = new EntryFederateAmbassador(this);
-        this.connectAmbassador(fedamb);
+            this.advanceTime(1.0);
+            log("Time Advanced to " + this.fedamb.getFederateTime());
+        }
 
-        this.createFederation(new URL[]{
-                (new File("foms/GasStation.xml")).toURI().toURL()
-        });
-
-        this.joinFederation(new URL[]{
-                (new File("foms/GasStation.xml")).toURI().toURL()
-        });
-
-        // TODO: Time factory
-
-        this.announceReadySyncPoint(this.fedamb);
-        // TODO: Remove the need for pause
-        this.waitForUser();
-        this.achieveReadySyncPoint(this.fedamb);
-
-        // TODO: Enable time policies
-
-        this.publishAndSubscribe();
-
-        this.runSimulation();
-
-        this.resignAndDestroyFederation();
+        rtiamb.deleteObjectInstance(entryQueue, generateTag());
+        log("Deleted Object, handle=" + entryQueue);
     }
 
     public static void main(String[] args) {
         String federateName = "EntryFederate";
 
         EntryFederate entryFederate = new EntryFederate(federateName);
+        entryFederate.assignAmbassador(new EntryFederateAmbassador(entryFederate));
 
         try {
             entryFederate.runFederate(federateName);
