@@ -3,6 +3,7 @@ package Entry;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
 import util.Federate;
+import util.Uint32;
 
 public class EntryFederate extends Federate {
     // EntryQueue object
@@ -56,6 +57,14 @@ public class EntryFederate extends Federate {
         this.log("Published and Subscribed");
     }
 
+    void updateEntryQueueCurrentVehicleCount(ObjectInstanceHandle entryQueue, int currentVehicleCount) throws RTIexception {
+        // TODO: Create reusable objects for ObjectInstanceHandles
+        AttributeHandleValueMap attributes = rtiamb.getAttributeHandleValueMapFactory().create(1);
+        Uint32 value = new Uint32(currentVehicleCount);
+        attributes.put(this.entryQueueCurrentVehicleCountAttrHandle, value.getByteArray());
+        rtiamb.updateAttributeValues(entryQueue, attributes, generateTag());
+    }
+
     protected void onNewClient(int vehicleId) {
         this.log("NewClient(" + vehicleId + ")");
     }
@@ -70,11 +79,9 @@ public class EntryFederate extends Federate {
         log("Registered Object, handle=" + entryQueue);
 
         for (int i = 0; i < ITERATIONS; i++) {
-            // 9.1 update the attribute values of the instance //
-//            updateAttributeValues( objectHandle );
-//
-//            // 9.2 send an interaction
-//            sendInteraction();
+            if (i % 5 == 2) {
+                this.updateEntryQueueCurrentVehicleCount(entryQueue, i);
+            }
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());

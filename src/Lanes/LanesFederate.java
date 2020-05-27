@@ -14,6 +14,12 @@ public class LanesFederate extends Federate {
     protected AttributeHandle laneMaxVehiclesAttrHandle;
     protected AttributeHandle laneEarliestVehicleIdAttrHandle;
 
+    // EntryQueue object
+    protected ObjectClassHandle entryQueueClassHandle;
+    protected AttributeHandle entryQueueCurrentVehicleCountAttrHandle;
+    protected AttributeHandle entryQueueMaxVehiclesAttrHandle;
+    protected AttributeHandle entryQueueEarliestVehicleIdAttrHandle;
+
     // GetClientL1 interaction
     protected InteractionClassHandle getClientL1InteractHandle;
     protected ParameterHandle getClientL1VehicleIdParamHandle;
@@ -50,6 +56,21 @@ public class LanesFederate extends Federate {
 
         rtiamb.publishObjectClassAttributes(this.laneClassHandle, laneAttributes);
         rtiamb.subscribeObjectClassAttributes(this.laneClassHandle, laneAttributes);
+
+        // Subscribe EntryQueue object
+        // TODO: Reusable objects!
+        this.entryQueueClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.EntryQueue");
+        this.entryQueueCurrentVehicleCountAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "currentVehicleCount");
+        this.entryQueueMaxVehiclesAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "maxVehicles");
+        this.entryQueueEarliestVehicleIdAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "earliestVehicleId");
+
+        AttributeHandleSet entryQueueAttributes = rtiamb.getAttributeHandleSetFactory().create();
+        entryQueueAttributes.add(this.entryQueueCurrentVehicleCountAttrHandle);
+        entryQueueAttributes.add(this.entryQueueMaxVehiclesAttrHandle);
+        entryQueueAttributes.add(this.entryQueueEarliestVehicleIdAttrHandle);
+
+//        rtiamb.publishObjectClassAttributes(this.entryQueueClassHandle, entryQueueAttributes);
+        rtiamb.subscribeObjectClassAttributes(this.entryQueueClassHandle, entryQueueAttributes);
 
         // Publish GetClientL1 interaction
 
