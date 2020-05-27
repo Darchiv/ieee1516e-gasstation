@@ -32,6 +32,10 @@ public abstract class Federate {
         this.logger = new Logger(name);
     }
 
+    protected abstract void publishAndSubscribe() throws RTIexception;
+
+    protected abstract void runSimulation() throws RTIexception;
+
     public void createAmbassador() throws RTIexception {
         this.log("Creating RTIambassador");
         this.rtiamb = RtiFactoryFactory.getRtiFactory().getRtiAmbassador();
@@ -135,12 +139,12 @@ public abstract class Federate {
         this.fedamb = ambassador;
     }
 
-    protected abstract void publishAndSubscribe() throws RTIexception;
-
-    protected abstract void runSimulation() throws RTIexception;
-
     public String getFederateName() {
         return this.name;
+    }
+
+    public int getTimeAsInt() {
+        return (int) this.fedamb.federateTime;
     }
 
     protected byte[] generateTag() {
