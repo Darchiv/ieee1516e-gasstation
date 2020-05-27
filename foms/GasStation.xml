@@ -125,6 +125,14 @@
 					<order>Receive</order>
 					<semantics>N/A</semantics>
 				</attribute>
+				<objectClass>
+					<name>Motorcycle</name>
+					<sharing>PublishSubscribe</sharing>
+				</objectClass>
+				<objectClass>
+					<name>Car</name>
+					<sharing>PublishSubscribe</sharing>
+				</objectClass>
 			</objectClass>
 			<objectClass>
 				<name>GasPump</name>
@@ -488,7 +496,15 @@
 			<enumeratedData>
 				<name>fuelEnum</name>
 				<representation>String</representation>
-				<semantics>{"Diesel","Petrol"}</semantics>
+				<semantics>{"diesel","petrol"}</semantics>
+				<enumerator>
+					<name>Diesel</name>
+					<value>diesel</value>
+				</enumerator>
+				<enumerator>
+					<name>Petrol</name>
+					<value>petrol</value>
+				</enumerator>
 			</enumeratedData>
 			<enumeratedData>
 				<name>HLAserviceGroupName</name>
