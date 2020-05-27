@@ -161,8 +161,8 @@ public abstract class Ambassador extends NullFederateAmbassador {
             builder.append(", time=" + ((HLAfloat64Time) time).getValue());
         }
 
-        builder.append(", parameterCount=" + theParameters.size());
         builder.append("\n");
+        builder.append(", parameterCount=" + theParameters.size());
         for (ParameterHandle parameter : theParameters.keySet()) {
             builder.append("\tparamHandle=" + parameter);
             byte[] value = theParameters.get(parameter);
