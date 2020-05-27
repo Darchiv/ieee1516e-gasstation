@@ -8,13 +8,15 @@ public abstract class Ambassador extends NullFederateAmbassador {
     private Logger logger;
     private String name;
 
-    protected boolean isAnnounced = false;
-    protected boolean isReadyToRun = false;
-
-    protected boolean isAdvancing = false;
-
     protected double federateTime = 0.0;
     protected double federateLookahead = 1.0;
+
+    protected boolean isRegulating = false;
+    protected boolean isConstrained = false;
+    protected boolean isAdvancing = false;
+
+    protected boolean isAnnounced = false;
+    protected boolean isReadyToRun = false;
 
     public Ambassador(String name) {
         this.name = name;
@@ -47,6 +49,18 @@ public abstract class Ambassador extends NullFederateAmbassador {
     }
 
     @Override
+    public void timeRegulationEnabled(LogicalTime time) {
+        this.federateTime = ((HLAfloat64Time) time).getValue();
+        this.isRegulating = true;
+    }
+
+    @Override
+    public void timeConstrainedEnabled(LogicalTime time) {
+        this.federateTime = ((HLAfloat64Time) time).getValue();
+        this.isConstrained = true;
+    }
+
+    @Override
     public void timeAdvanceGrant(LogicalTime time) {
         this.federateTime = ((HLAfloat64Time) time).getValue();
         this.isAdvancing = false;
@@ -59,6 +73,55 @@ public abstract class Ambassador extends NullFederateAmbassador {
             throws FederateInternalError {
         log("Discovered Object: handle=" + theObject + ", classHandle=" +
                 theObjectClass + ", name=" + objectName);
+    }
+
+    @Override
+    public void reflectAttributeValues(ObjectInstanceHandle theObject,
+                                       AttributeHandleValueMap theAttributes,
+                                       byte[] tag,
+                                       OrderType sentOrder,
+                                       TransportationTypeHandle transport,
+                                       SupplementalReflectInfo reflectInfo)
+            throws FederateInternalError {
+        reflectAttributeValues(theObject,
+                theAttributes,
+                tag,
+                sentOrder,
+                transport,
+                null,
+                sentOrder,
+                reflectInfo);
+    }
+
+    @Override
+    public void reflectAttributeValues(ObjectInstanceHandle theObject,
+                                       AttributeHandleValueMap theAttributes,
+                                       byte[] tag,
+                                       OrderType sentOrdering,
+                                       TransportationTypeHandle theTransport,
+                                       LogicalTime time,
+                                       OrderType receivedOrdering,
+                                       SupplementalReflectInfo reflectInfo)
+            throws FederateInternalError {
+        StringBuilder builder = new StringBuilder("Reflection for object:");
+
+        builder.append(" handle=" + theObject);
+        builder.append(", tag=" + new String(tag));
+
+        if (time != null) {
+            builder.append(", time=" + ((HLAfloat64Time) time).getValue());
+        }
+
+        builder.append(", attributeCount=" + theAttributes.size());
+        builder.append("\n");
+        for (AttributeHandle attributeHandle : theAttributes.keySet()) {
+            builder.append("\tattributeHandle=" + attributeHandle);
+            byte[] value = theAttributes.get(attributeHandle);
+            builder.append(", attributeValue(raw)=" + Hex.bytesToHex(value));
+            builder.append("\n");
+        }
+
+        this.log(builder.toString());
     }
 
     @Override
@@ -91,36 +154,23 @@ public abstract class Ambassador extends NullFederateAmbassador {
             throws FederateInternalError {
         StringBuilder builder = new StringBuilder("Interaction Received:");
 
-        // print the handle
         builder.append(" handle=" + interactionClass);
-//        if( interactionClass.equals(federate.servedHandle) )
-//        {
-//            builder.append( " (DrinkServed)" );
-//        }
-
-        // print the tag
         builder.append(", tag=" + new String(tag));
-        // print the time (if we have it) we'll get null if we are just receiving
-        // a forwarded call from the other reflect callback above
+
         if (time != null) {
             builder.append(", time=" + ((HLAfloat64Time) time).getValue());
         }
 
-        // print the parameer information
-        builder.append(", parameterCount=" + theParameters.size());
         builder.append("\n");
+        builder.append(", parameterCount=" + theParameters.size());
         for (ParameterHandle parameter : theParameters.keySet()) {
-            // print the parameter handle
-            builder.append("\tparamHandle=");
-            builder.append(parameter);
-            // print the parameter value
-            builder.append(", paramValue=");
-            builder.append(theParameters.get(parameter).length);
-            builder.append(" bytes");
+            builder.append("\tparamHandle=" + parameter);
+            byte[] value = theParameters.get(parameter);
+            builder.append(", paramValue(raw)=" + Hex.bytesToHex(value));
             builder.append("\n");
         }
 
-        log(builder.toString());
+        this.log(builder.toString());
     }
 
     @Override
