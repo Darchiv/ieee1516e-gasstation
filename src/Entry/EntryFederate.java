@@ -49,11 +49,19 @@ public class EntryFederate extends Federate {
         // Subscribe GetClientL1 interaction
 
         this.getClientL1InteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.GetClientL1");
-        this.getClientL1VehicleIdParamHandle = rtiamb.getParameterHandle(this.newClientInteractHandle, "vehicleId");
+        this.getClientL1VehicleIdParamHandle = rtiamb.getParameterHandle(this.getClientL1InteractHandle, "vehicleId");
         rtiamb.subscribeInteractionClass(this.getClientL1InteractHandle);
 
 
         this.log("Published and Subscribed");
+    }
+
+    protected void onNewClient(int vehicleId) {
+        this.log("NewClient(" + vehicleId + ")");
+    }
+
+    protected void onGetClientL1(int vehicleId) {
+        this.log("GetClientL1(" + vehicleId + ")");
     }
 
     protected void runSimulation() throws RTIexception {

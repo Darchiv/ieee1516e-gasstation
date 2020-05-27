@@ -8,7 +8,7 @@ public class GasPumpFederateAmbassador extends Ambassador {
 //    TODO: Implement interactions/reflections
 
     public GasPumpFederateAmbassador(GasPumpFederate federate) {
-        super("LanesFederateAmbassador");
+        super("GasPumpFederateAmbassador");
         this.federate = federate;
     }
 }

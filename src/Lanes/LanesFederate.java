@@ -3,6 +3,7 @@ package Lanes;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
 import util.Federate;
+import util.FuelEnum;
 import util.Uint32;
 
 public class LanesFederate extends Federate {
@@ -78,6 +79,14 @@ public class LanesFederate extends Federate {
         Uint32 value = new Uint32(vehicleId);
         parameters.put(this.getClientL1VehicleIdParamHandle, value.getByteArray());
         rtiamb.sendInteraction(this.getClientL1InteractHandle, parameters, generateTag());
+    }
+
+    void onGetClientL2(int vehicleId) {
+        this.log("GetClientL2(" + vehicleId + ")");
+    }
+
+    void onGasPumpOpen(int gasPumpId, FuelEnum fuelType) {
+        this.log("GasPumpOpen(" + gasPumpId + ", " + fuelType.getValue() + ")");
     }
 
     protected void runSimulation() throws RTIexception {

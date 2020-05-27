@@ -12,6 +12,10 @@ public class Uint32 {
     }
 
     public Uint32(byte[] arr) {
+        if (arr.length != 4) {
+            throw new IllegalArgumentException("Not a uint32 byte array: length=" + arr.length);
+        }
+
         this.value = (arr[0] << 24) + (arr[1] << 16) + (arr[2] << 8) + arr[3];
     }
 

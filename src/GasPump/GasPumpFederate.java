@@ -36,8 +36,8 @@ public class GasPumpFederate extends Federate {
 
     // FuelPaid interaction
     protected InteractionClassHandle fuelPaidInteractHandle;
+    protected ParameterHandle fuelPaidVehicleIdParamHandle;
     protected ParameterHandle fuelPaidGasPumpIdParamHandle;
-    protected ParameterHandle fuelPaidFuelTypeParamHandle;
 
     public GasPumpFederate(String name) {
         super(name);
@@ -63,16 +63,16 @@ public class GasPumpFederate extends Federate {
         // Publish and subscribe Vehicle object
 
         this.vehicleClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.Vehicle");
-        this.vehicleIdAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "isBusy");
+        this.vehicleIdAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "id");
         this.vehicleIsFilled = rtiamb.getAttributeHandle(this.vehicleClassHandle, "isFilled");
         this.vehicleTimeEntered = rtiamb.getAttributeHandle(this.vehicleClassHandle, "timeEntered");
         this.vehicleFuelType = rtiamb.getAttributeHandle(this.vehicleClassHandle, "fuelType");
 
         AttributeHandleSet vehicleAttribute = rtiamb.getAttributeHandleSetFactory().create();
-        gasPumpAttribute.add(this.vehicleIdAttrHandle);
-        gasPumpAttribute.add(this.vehicleIsFilled);
-        gasPumpAttribute.add(this.vehicleTimeEntered);
-        gasPumpAttribute.add(this.vehicleFuelType);
+        vehicleAttribute.add(this.vehicleIdAttrHandle);
+        vehicleAttribute.add(this.vehicleIsFilled);
+        vehicleAttribute.add(this.vehicleTimeEntered);
+        vehicleAttribute.add(this.vehicleFuelType);
 
         rtiamb.publishObjectClassAttributes(this.vehicleClassHandle, vehicleAttribute);
         rtiamb.subscribeObjectClassAttributes(this.vehicleClassHandle, vehicleAttribute);
@@ -100,8 +100,8 @@ public class GasPumpFederate extends Federate {
         // Subscribe FuelPaid interaction
 
         this.fuelPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.FuelPaid");
+        this.fuelPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "vehicleId");
         this.fuelPaidGasPumpIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "gasPumpId");
-        this.fuelPaidFuelTypeParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "fuelType");
         rtiamb.subscribeInteractionClass(this.fuelPaidInteractHandle);
 
         this.log("Published and Subscribed");
@@ -120,7 +120,7 @@ public class GasPumpFederate extends Federate {
         FuelEnum hlaFuelType = new FuelEnum(fuelType);
         parameters.put(this.gasPumpOpenGasPumpIdParamHandle, hlaGasPumpId.getByteArray());
         parameters.put(this.gasPumpOpenFuelTypeParamHandle, hlaFuelType.getByteArray());
-        rtiamb.sendInteraction(this.getClientL2InteractHandle, parameters, generateTag());
+        rtiamb.sendInteraction(this.gasPumpOpenInteractHandle, parameters, generateTag());
     }
 
     protected void runSimulation() throws RTIexception {
@@ -141,7 +141,7 @@ public class GasPumpFederate extends Federate {
     }
 
     public static void main(String[] args) {
-        String federateName = "LanesFederate";
+        String federateName = "GasPumpFederate";
 
         GasPumpFederate gasPumpFederate = new GasPumpFederate(federateName);
         gasPumpFederate.assignAmbassador(new GasPumpFederateAmbassador(gasPumpFederate));
