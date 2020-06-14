@@ -1,8 +1,11 @@
-package util;
+package RtiObjects;
 
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
 import hla.rti1516e.time.HLAfloat64Time;
+import util.Hex;
+import util.Logger;
+import util.LoggerLevel;
 
 public abstract class Ambassador extends NullFederateAmbassador {
     private Logger logger;

@@ -1,6 +1,6 @@
-package util;
+package RtiObjects;
 
-import Entry.EntryFederateAmbassador;
+import RtiObjects.Ambassador;
 import hla.rti1516e.*;
 import hla.rti1516e.encoding.EncoderFactory;
 import hla.rti1516e.exceptions.FederatesCurrentlyJoined;
@@ -9,6 +9,8 @@ import hla.rti1516e.exceptions.FederationExecutionDoesNotExist;
 import hla.rti1516e.exceptions.RTIexception;
 import hla.rti1516e.time.HLAfloat64Time;
 import hla.rti1516e.time.HLAfloat64TimeFactory;
+import util.Logger;
+import util.LoggerLevel;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,9 +1,8 @@
 package Lanes;
 
-import Entry.EntryFederate;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
-import util.Ambassador;
+import RtiObjects.Ambassador;
 import util.FuelEnum;
 import util.Uint32;
 

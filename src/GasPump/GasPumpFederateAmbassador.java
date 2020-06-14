@@ -1,6 +1,6 @@
 package GasPump;
 
-import util.Ambassador;
+import RtiObjects.Ambassador;
 
 public class GasPumpFederateAmbassador extends Ambassador {
     private GasPumpFederate federate;

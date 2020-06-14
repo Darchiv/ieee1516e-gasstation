@@ -1,25 +1,13 @@
 package GasPump;
 
+import RtiObjects.RtiObjectFactory;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
-import util.Federate;
+import RtiObjects.Federate;
 import util.FuelEnum;
 import util.Uint32;
 
 public class GasPumpFederate extends Federate {
-    // GasPump object
-    protected ObjectClassHandle gasPumpClassHandle;
-    protected AttributeHandle gasPumpIsBusyAttrHandle;
-    protected AttributeHandle gasPumpCurrentVehicleIdAttrHandle;
-    protected AttributeHandle gasPumpFuelTypeAttrHandle;
-
-    // Vehicle object
-    protected ObjectClassHandle vehicleClassHandle;
-    protected AttributeHandle vehicleIdAttrHandle;
-    protected AttributeHandle vehicleIsFilled;
-    protected AttributeHandle vehicleTimeEntered;
-    protected AttributeHandle vehicleFuelType;
-
     // GetClientL2 interaction
     protected InteractionClassHandle getClientL2InteractHandle;
     protected ParameterHandle getClientL2VehicleIdParamHandle;
@@ -45,37 +33,10 @@ public class GasPumpFederate extends Federate {
 
     @Override
     protected void publishAndSubscribe() throws RTIexception {
-        // Publish and subscribe GasPump object
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
 
-        this.gasPumpClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.GasPump");
-        this.gasPumpIsBusyAttrHandle = rtiamb.getAttributeHandle(this.gasPumpClassHandle, "isBusy");
-        this.gasPumpCurrentVehicleIdAttrHandle = rtiamb.getAttributeHandle(this.gasPumpClassHandle, "currentVehicleId");
-        this.gasPumpFuelTypeAttrHandle = rtiamb.getAttributeHandle(this.gasPumpClassHandle, "fuelType");
-
-        AttributeHandleSet gasPumpAttribute = rtiamb.getAttributeHandleSetFactory().create();
-        gasPumpAttribute.add(this.gasPumpIsBusyAttrHandle);
-        gasPumpAttribute.add(this.gasPumpCurrentVehicleIdAttrHandle);
-        gasPumpAttribute.add(this.gasPumpFuelTypeAttrHandle);
-
-        rtiamb.publishObjectClassAttributes(this.gasPumpClassHandle, gasPumpAttribute);
-        rtiamb.subscribeObjectClassAttributes(this.gasPumpClassHandle, gasPumpAttribute);
-
-        // Publish and subscribe Vehicle object
-
-        this.vehicleClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.Vehicle");
-        this.vehicleIdAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "id");
-        this.vehicleIsFilled = rtiamb.getAttributeHandle(this.vehicleClassHandle, "isFilled");
-        this.vehicleTimeEntered = rtiamb.getAttributeHandle(this.vehicleClassHandle, "timeEntered");
-        this.vehicleFuelType = rtiamb.getAttributeHandle(this.vehicleClassHandle, "fuelType");
-
-        AttributeHandleSet vehicleAttribute = rtiamb.getAttributeHandleSetFactory().create();
-        vehicleAttribute.add(this.vehicleIdAttrHandle);
-        vehicleAttribute.add(this.vehicleIsFilled);
-        vehicleAttribute.add(this.vehicleTimeEntered);
-        vehicleAttribute.add(this.vehicleFuelType);
-
-        rtiamb.publishObjectClassAttributes(this.vehicleClassHandle, vehicleAttribute);
-        rtiamb.subscribeObjectClassAttributes(this.vehicleClassHandle, vehicleAttribute);
+        rtiObjectFactory.registerVehicle(true, true);
+        rtiObjectFactory.registerGasPump(true, true);
 
         // Publish GetClientL2 interaction
 

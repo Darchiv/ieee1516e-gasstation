@@ -2,7 +2,7 @@ package Entry;
 
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
-import util.Federate;
+import RtiObjects.Federate;
 import util.Uint32;
 
 public class EntryFederate extends Federate {

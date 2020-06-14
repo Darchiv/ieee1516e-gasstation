@@ -1,18 +1,12 @@
 package Vehicle;
 
+import RtiObjects.*;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
-import util.Federate;
+import util.FuelEnum;
 import util.Uint32;
 
 public class VehicleFederate extends Federate {
-    // Vehicle object
-    protected ObjectClassHandle vehicleClassHandle;
-    protected AttributeHandle vehicleIdAttrHandle;
-    protected AttributeHandle vehicleIsFilledAttrHandle;
-    protected AttributeHandle vehicleTimeEnteredAttrHandle;
-    protected AttributeHandle vehicleFuelTypeAttrHandle;
-
     // NewClient interaction
     protected InteractionClassHandle newClientInteractHandle;
     protected ParameterHandle newClientVehicleIdParamHandle;
@@ -23,22 +17,11 @@ public class VehicleFederate extends Federate {
 
     @Override
     protected void publishAndSubscribe() throws RTIexception {
-        // Publish and subscribe Vehicle object
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
 
-        this.vehicleClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.Vehicle");
-        this.vehicleIdAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "id");
-        this.vehicleIsFilledAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "isFilled");
-        this.vehicleTimeEnteredAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "timeEntered");
-        this.vehicleFuelTypeAttrHandle = rtiamb.getAttributeHandle(this.vehicleClassHandle, "fuelType");
-
-        AttributeHandleSet vehicleAttributes = rtiamb.getAttributeHandleSetFactory().create();
-        vehicleAttributes.add(this.vehicleIdAttrHandle);
-        vehicleAttributes.add(this.vehicleIsFilledAttrHandle);
-        vehicleAttributes.add(this.vehicleTimeEnteredAttrHandle);
-        vehicleAttributes.add(this.vehicleFuelTypeAttrHandle);
-
-        rtiamb.publishObjectClassAttributes(this.vehicleClassHandle, vehicleAttributes);
-        rtiamb.subscribeObjectClassAttributes(this.vehicleClassHandle, vehicleAttributes);
+        rtiObjectFactory.registerVehicle(true, true);
+        rtiObjectFactory.registerCar(true, true);
+        rtiObjectFactory.registerMotorcycle(true, true);
 
         // Publish NewClient interaction
 
@@ -58,11 +41,11 @@ public class VehicleFederate extends Federate {
     }
 
     protected void runSimulation() throws RTIexception {
-        // Register (create) a new instance of Vehicle
         // TODO: This object must be created on request (randomly), not once
-        // TODO: Create only a subclass of Vehicle, i.e. Car or Motorcycle
-        ObjectInstanceHandle vehicle = rtiamb.registerObjectInstance(this.vehicleClassHandle);
-        log("Registered Object, handle=" + vehicle);
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+        Car c1 = rtiObjectFactory.createCar();
+        c1.setInitialAttributeValues(1, false, 0, new FuelEnum("petrol"));
+        log("Registered Car, handle=" + c1);
 
         for (int i = 0; i < ITERATIONS; i++) {
 //			updateAttributeValues( objectHandle );
@@ -76,8 +59,8 @@ public class VehicleFederate extends Federate {
         }
 
         // TODO: Vehicles must be deleted when requested by the Vehicle federate
-        rtiamb.deleteObjectInstance(vehicle, generateTag());
-        log("Deleted Object, handle=" + vehicle);
+        c1.destroy();
+        log("Deleted Car, handle=" + c1);
     }
 
     public static void main(String[] args) {

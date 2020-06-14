@@ -14,7 +14,7 @@
  */
 package Vehicle;
 
-import util.Ambassador;
+import RtiObjects.Ambassador;
 
 public class VehicleFederateAmbassador extends Ambassador {
     private VehicleFederate federate;

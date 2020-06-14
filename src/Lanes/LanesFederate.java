@@ -2,7 +2,7 @@ package Lanes;
 
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.RTIexception;
-import util.Federate;
+import RtiObjects.Federate;
 import util.FuelEnum;
 import util.Uint32;
 
