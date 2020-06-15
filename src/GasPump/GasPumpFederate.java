@@ -86,6 +86,26 @@ public class GasPumpFederate extends Federate {
         rtiamb.sendInteraction(this.gasPumpOpenInteractHandle, parameters, generateTag());
     }
 
+    void sendRefueled(int vehicleId, int gasPumpId) throws RTIexception {
+        ParameterHandleValueMap parameters = rtiamb.getParameterHandleValueMapFactory().create(2);
+        parameters.put(this.refueledVehicleIdParamHandle, new Uint32(vehicleId).getByteArray());
+        parameters.put(this.refueledGasPumpIdParamHandle, new Uint32(gasPumpId).getByteArray());
+        rtiamb.sendInteraction(this.refueledInteractHandle, parameters, generateTag());
+    }
+
+    void onFuelPaid(int vehicleId, int gasPumpId) {
+        // TODO: Handle that
+    }
+
+    void onUpdatedLane(int gasPumpId, int currentVehicleCount, int earliestVehicleId) {
+        // TODO: Add the vehicle to appropriate gas pump and set it busy, schedule a "filled" event
+        // TODO: Use sendGetClientL2() to send interacion to Lane
+    }
+
+    void onUpdatedVehicle(int vehicleId, FuelEnum fuelType) {
+        // TODO: Store info about fueType of this vehicleId for future needs?
+    }
+
     protected void runSimulation() throws RTIexception {
 
 
@@ -96,6 +116,9 @@ public class GasPumpFederate extends Federate {
             if (i % 6 == 0) {
                 this.sendGetClientL2(10);
             }
+
+            // TODO: Send Refueled interaction when a vehicle has been refuelled
+
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());
         }

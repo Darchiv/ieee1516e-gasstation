@@ -62,6 +62,22 @@ public abstract class Vehicle extends RtiObject {
         return fuelType;
     }
 
+    public static AttributeHandle getIdAttrHandle() {
+        return idAttrHandle;
+    }
+
+    public static AttributeHandle getIsFilledAttrHandle() {
+        return isFilledAttrHandle;
+    }
+
+    public static AttributeHandle getTimeEnteredAttrHandle() {
+        return timeEnteredAttrHandle;
+    }
+
+    public static AttributeHandle getFuelTypeAttrHandle() {
+        return fuelTypeAttrHandle;
+    }
+
     void setId(int id) {
         this.id = id;
     }

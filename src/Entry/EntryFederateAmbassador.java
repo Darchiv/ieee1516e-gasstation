@@ -14,6 +14,16 @@ public class EntryFederateAmbassador extends Ambassador {
     }
 
     @Override
+    public void discoverObjectInstance(ObjectInstanceHandle theObject,
+                                       ObjectClassHandle theObjectClass,
+                                       String objectName)
+            throws FederateInternalError {
+        super.discoverObjectInstance(theObject, theObjectClass, objectName);
+
+        instanceToClassMap.put(theObject, theObjectClass);
+    }
+
+    @Override
     public void receiveInteraction(InteractionClassHandle interactionClass,
                                    ParameterHandleValueMap theParameters,
                                    byte[] tag,

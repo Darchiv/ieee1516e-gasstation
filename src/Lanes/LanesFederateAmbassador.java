@@ -2,6 +2,7 @@ package Lanes;
 
 import RtiObjects.Ambassador;
 import RtiObjects.EntryQueue;
+import RtiObjects.Vehicle;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
 import util.FuelEnum;
@@ -12,11 +13,20 @@ import java.util.Map;
 
 public class LanesFederateAmbassador extends Ambassador {
     private LanesFederate federate;
-    private Map<ObjectInstanceHandle, ObjectClassHandle> instanceToClassMap = new HashMap<>();
 
     public LanesFederateAmbassador(LanesFederate federate) {
         super("LanesFederateAmbassador");
         this.federate = federate;
+    }
+
+    @Override
+    public void discoverObjectInstance(ObjectInstanceHandle theObject,
+                                       ObjectClassHandle theObjectClass,
+                                       String objectName)
+            throws FederateInternalError {
+        super.discoverObjectInstance(theObject, theObjectClass, objectName);
+
+        instanceToClassMap.put(theObject, theObjectClass);
     }
 
     @Override
@@ -59,16 +69,6 @@ public class LanesFederateAmbassador extends Ambassador {
     }
 
     @Override
-    public void discoverObjectInstance(ObjectInstanceHandle theObject,
-                                       ObjectClassHandle theObjectClass,
-                                       String objectName)
-            throws FederateInternalError {
-        super.discoverObjectInstance(theObject, theObjectClass, objectName);
-
-        instanceToClassMap.put(theObject, theObjectClass);
-    }
-
-    @Override
     public void reflectAttributeValues(ObjectInstanceHandle theObject,
                                        AttributeHandleValueMap theAttributes,
                                        byte[] tag,
@@ -102,6 +102,21 @@ public class LanesFederateAmbassador extends Ambassador {
 
             // TODO: Maybe use maxVehicles
             this.federate.onUpdatedEntryQueue(currentVehicleCount.getValue(), earliestVehicleId.getValue());
+        } else if (instanceToClassMap.get(theObject).equals(Vehicle.getClassHandle())) {
+            Uint32 id = null;
+            FuelEnum fuelType = null;
+
+            byte[] idRaw = theAttributes.get(Vehicle.getIdAttrHandle());
+            if (idRaw != null) {
+                id = new Uint32(idRaw);
+            }
+
+            byte[] fuelTypeRaw = theAttributes.get(Vehicle.getFuelTypeAttrHandle());
+            if (fuelTypeRaw != null) {
+                fuelType = new FuelEnum(fuelTypeRaw);
+            }
+
+            this.federate.onUpdatedVehicle(id.getValue(), fuelType);
         }
     }
 }

@@ -40,6 +40,7 @@ public class LanesFederate extends Federate {
 
         rtiObjectFactory.registerLane(true, true);
         rtiObjectFactory.registerEntryQueue(true, true);
+        rtiObjectFactory.registerVehicle(false, true);
 
         // Publish GetClientL1 interaction
 
@@ -77,11 +78,18 @@ public class LanesFederate extends Federate {
 
     void onGasPumpOpen(int gasPumpId, FuelEnum fuelType) {
         this.log("GasPumpOpen(" + gasPumpId + ", " + fuelType.getValue() + ")");
+
+        // TODO: Create a Lane for the gasPumpId given
     }
 
     void onUpdatedEntryQueue(int currentVehicleCount, int earliestVehicleId) {
         // TODO: Add the vehicle to some lane queue if possible
         // TODO: Use sendGetClientL1() to send interacion to EntryQueue
+    }
+
+    void onUpdatedVehicle(int vehicleId, FuelEnum fuelType) {
+        // TODO: Store info about fueType of this vehicleId for future needs - move the vehicle
+        // into an appropriate lane when time for it comes
     }
 
     protected void runSimulation() throws RTIexception {

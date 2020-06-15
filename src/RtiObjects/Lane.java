@@ -61,6 +61,22 @@ public class Lane extends RtiObject {
         return earliestVehicleId;
     }
 
+    public static AttributeHandle getGasPumpIdAttrHandle() {
+        return gasPumpIdAttrHandle;
+    }
+
+    public static AttributeHandle getCurrentVehicleCountAttrHandle() {
+        return currentVehicleCountAttrHandle;
+    }
+
+    public static AttributeHandle getMaxVehiclesAttrHandle() {
+        return maxVehiclesAttrHandle;
+    }
+
+    public static AttributeHandle getEarliestVehicleIdAttrHandle() {
+        return earliestVehicleIdAttrHandle;
+    }
+
     protected static void registerHandles(RTIambassador rtiamb, ObjectClassHandle classHandle, boolean publish, boolean subscribe) throws RTIexception {
         gasPumpIdAttrHandle = rtiamb.getAttributeHandle(classHandle, "gasPumpId");
         currentVehicleCountAttrHandle = rtiamb.getAttributeHandle(classHandle, "currentVehicleCount");

@@ -18,6 +18,11 @@ public class VehicleFederate extends Federate {
     protected InteractionClassHandle newClientInteractHandle;
     protected ParameterHandle newClientVehicleIdParamHandle;
 
+    // FuelPaid interaction
+    protected InteractionClassHandle fuelPaidInteractHandle;
+    protected ParameterHandle fuelPaidVehicleIdParamHandle;
+    protected ParameterHandle fuelPaidGasPumpIdParamHandle;
+
     public VehicleFederate(String name) {
         super(name);
     }
@@ -36,6 +41,13 @@ public class VehicleFederate extends Federate {
         this.newClientVehicleIdParamHandle = rtiamb.getParameterHandle(this.newClientInteractHandle, "vehicleId");
         rtiamb.publishInteractionClass(this.newClientInteractHandle);
 
+        // Subscribe FuelPaid interaction
+
+        this.fuelPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.FuelPaid");
+        this.fuelPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "vehicleId");
+        this.fuelPaidGasPumpIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "gasPumpId");
+        rtiamb.subscribeInteractionClass(this.fuelPaidInteractHandle);
+
 
         this.log("Published and Subscribed");
     }
@@ -45,6 +57,10 @@ public class VehicleFederate extends Federate {
         Uint32 value = new Uint32(vehicleId);
         parameters.put(this.newClientVehicleIdParamHandle, value.getByteArray());
         rtiamb.sendInteraction(this.newClientInteractHandle, parameters, generateTag());
+    }
+
+    void onFuelPaid(int vehicleId, int gasPumpId) {
+        // TODO: Handle that
     }
 
     protected void runSimulation() throws RTIexception {

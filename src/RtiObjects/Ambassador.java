@@ -7,6 +7,9 @@ import util.Hex;
 import util.Logger;
 import util.LoggerLevel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class Ambassador extends NullFederateAmbassador {
     private Logger logger;
     private String name;
@@ -20,6 +23,8 @@ public abstract class Ambassador extends NullFederateAmbassador {
 
     protected boolean isAnnounced = false;
     protected boolean isReadyToRun = false;
+
+    protected Map<ObjectInstanceHandle, ObjectClassHandle> instanceToClassMap = new HashMap<>();
 
     public Ambassador(String name) {
         this.name = name;
