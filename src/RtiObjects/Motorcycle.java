@@ -13,6 +13,10 @@ public class Motorcycle extends Vehicle {
         this.instance = rtiamb.registerObjectInstance(classHandle);
     }
 
+    public static ObjectClassHandle getClassHandle() {
+        return classHandle;
+    }
+
     protected static ObjectClassHandle registerClassHandle(RTIambassador rtiamb) throws RTIexception {
         classHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.Vehicle.Motorcycle");
         return classHandle;

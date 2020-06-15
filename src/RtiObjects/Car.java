@@ -2,7 +2,7 @@ package RtiObjects;
 
 import hla.rti1516e.ObjectClassHandle;
 import hla.rti1516e.RTIambassador;
-import hla.rti1516e.exceptions.*;
+import hla.rti1516e.exceptions.RTIexception;
 
 public class Car extends Vehicle {
     private static ObjectClassHandle classHandle;
@@ -11,6 +11,10 @@ public class Car extends Vehicle {
         super(rtiamb);
 
         this.instance = rtiamb.registerObjectInstance(classHandle);
+    }
+
+    public static ObjectClassHandle getClassHandle() {
+        return classHandle;
     }
 
     protected static ObjectClassHandle registerClassHandle(RTIambassador rtiamb) throws RTIexception {

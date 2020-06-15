@@ -1,6 +1,9 @@
 package RtiObjects;
 
-import hla.rti1516e.*;
+import hla.rti1516e.AttributeHandleValueMap;
+import hla.rti1516e.ObjectInstanceHandle;
+import hla.rti1516e.RTIambassador;
+import hla.rti1516e.RtiFactoryFactory;
 import hla.rti1516e.encoding.EncoderFactory;
 import hla.rti1516e.exceptions.RTIexception;
 

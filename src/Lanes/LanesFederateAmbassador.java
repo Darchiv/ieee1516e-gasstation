@@ -1,15 +1,18 @@
 package Lanes;
 
+import RtiObjects.Ambassador;
+import RtiObjects.EntryQueue;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
-import RtiObjects.Ambassador;
 import util.FuelEnum;
 import util.Uint32;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class LanesFederateAmbassador extends Ambassador {
     private LanesFederate federate;
-
-//    TODO: Implement reflections
+    private Map<ObjectInstanceHandle, ObjectClassHandle> instanceToClassMap = new HashMap<>();
 
     public LanesFederateAmbassador(LanesFederate federate) {
         super("LanesFederateAmbassador");
@@ -52,6 +55,53 @@ public class LanesFederateAmbassador extends Ambassador {
             this.federate.onGasPumpOpen(gasPumpId, fuelType);
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
+        }
+    }
+
+    @Override
+    public void discoverObjectInstance(ObjectInstanceHandle theObject,
+                                       ObjectClassHandle theObjectClass,
+                                       String objectName)
+            throws FederateInternalError {
+        super.discoverObjectInstance(theObject, theObjectClass, objectName);
+
+        instanceToClassMap.put(theObject, theObjectClass);
+    }
+
+    @Override
+    public void reflectAttributeValues(ObjectInstanceHandle theObject,
+                                       AttributeHandleValueMap theAttributes,
+                                       byte[] tag,
+                                       OrderType sentOrdering,
+                                       TransportationTypeHandle theTransport,
+                                       LogicalTime time,
+                                       OrderType receivedOrdering,
+                                       SupplementalReflectInfo reflectInfo)
+            throws FederateInternalError {
+        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
+
+        if (instanceToClassMap.get(theObject).equals(EntryQueue.getClassHandle())) {
+            Uint32 maxVehicles = null;
+            Uint32 currentVehicleCount = null;
+            Uint32 earliestVehicleId = null;
+
+            byte[] maxVehiclesRaw = theAttributes.get(EntryQueue.getMaxVehiclesAttrHandle());
+            if (maxVehiclesRaw != null) {
+                maxVehicles = new Uint32(maxVehiclesRaw);
+            }
+
+            byte[] currentVehicleCountRaw = theAttributes.get(EntryQueue.getCurrentVehicleCountAttrHandle());
+            if (currentVehicleCountRaw != null) {
+                currentVehicleCount = new Uint32(currentVehicleCountRaw);
+            }
+
+            byte[] earliestVehicleIdRaw = theAttributes.get(EntryQueue.getEarliestVehicleIdAttrHandle());
+            if (earliestVehicleIdRaw != null) {
+                earliestVehicleId = new Uint32(earliestVehicleIdRaw);
+            }
+
+            // TODO: Maybe use maxVehicles
+            this.federate.onUpdatedEntryQueue(currentVehicleCount.getValue(), earliestVehicleId.getValue());
         }
     }
 }

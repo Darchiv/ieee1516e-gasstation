@@ -1,24 +1,18 @@
 package Lanes;
 
-import hla.rti1516e.*;
-import hla.rti1516e.exceptions.RTIexception;
 import RtiObjects.Federate;
+import RtiObjects.Lane;
+import RtiObjects.RtiObjectFactory;
+import hla.rti1516e.InteractionClassHandle;
+import hla.rti1516e.ParameterHandle;
+import hla.rti1516e.ParameterHandleValueMap;
+import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
 public class LanesFederate extends Federate {
     // Lane object
-    protected ObjectClassHandle laneClassHandle;
-    protected AttributeHandle laneGasPumpIdAttrHandle;
-    protected AttributeHandle laneCurrentVehicleCountAttrHandle;
-    protected AttributeHandle laneMaxVehiclesAttrHandle;
-    protected AttributeHandle laneEarliestVehicleIdAttrHandle;
-
-    // EntryQueue object
-    protected ObjectClassHandle entryQueueClassHandle;
-    protected AttributeHandle entryQueueCurrentVehicleCountAttrHandle;
-    protected AttributeHandle entryQueueMaxVehiclesAttrHandle;
-    protected AttributeHandle entryQueueEarliestVehicleIdAttrHandle;
+    // TODO: Lanes list (uninitialized)
 
     // GetClientL1 interaction
     protected InteractionClassHandle getClientL1InteractHandle;
@@ -40,37 +34,12 @@ public class LanesFederate extends Federate {
 
     @Override
     protected void publishAndSubscribe() throws RTIexception {
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+
         // Publish and subscribe Lane object
 
-        this.laneClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.Lane");
-        this.laneGasPumpIdAttrHandle = rtiamb.getAttributeHandle(this.laneClassHandle, "gasPumpId");
-        this.laneCurrentVehicleCountAttrHandle = rtiamb.getAttributeHandle(this.laneClassHandle, "currentVehicleCount");
-        this.laneMaxVehiclesAttrHandle = rtiamb.getAttributeHandle(this.laneClassHandle, "maxVehicles");
-        this.laneEarliestVehicleIdAttrHandle = rtiamb.getAttributeHandle(this.laneClassHandle, "earliestVehicleId");
-
-        AttributeHandleSet laneAttributes = rtiamb.getAttributeHandleSetFactory().create();
-        laneAttributes.add(this.laneGasPumpIdAttrHandle);
-        laneAttributes.add(this.laneCurrentVehicleCountAttrHandle);
-        laneAttributes.add(this.laneMaxVehiclesAttrHandle);
-        laneAttributes.add(this.laneEarliestVehicleIdAttrHandle);
-
-        rtiamb.publishObjectClassAttributes(this.laneClassHandle, laneAttributes);
-        rtiamb.subscribeObjectClassAttributes(this.laneClassHandle, laneAttributes);
-
-        // Subscribe EntryQueue object
-        // TODO: Reusable objects!
-        this.entryQueueClassHandle = rtiamb.getObjectClassHandle("HLAobjectRoot.EntryQueue");
-        this.entryQueueCurrentVehicleCountAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "currentVehicleCount");
-        this.entryQueueMaxVehiclesAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "maxVehicles");
-        this.entryQueueEarliestVehicleIdAttrHandle = rtiamb.getAttributeHandle(this.entryQueueClassHandle, "earliestVehicleId");
-
-        AttributeHandleSet entryQueueAttributes = rtiamb.getAttributeHandleSetFactory().create();
-        entryQueueAttributes.add(this.entryQueueCurrentVehicleCountAttrHandle);
-        entryQueueAttributes.add(this.entryQueueMaxVehiclesAttrHandle);
-        entryQueueAttributes.add(this.entryQueueEarliestVehicleIdAttrHandle);
-
-//        rtiamb.publishObjectClassAttributes(this.entryQueueClassHandle, entryQueueAttributes);
-        rtiamb.subscribeObjectClassAttributes(this.entryQueueClassHandle, entryQueueAttributes);
+        rtiObjectFactory.registerLane(true, true);
+        rtiObjectFactory.registerEntryQueue(true, true);
 
         // Publish GetClientL1 interaction
 
@@ -110,18 +79,23 @@ public class LanesFederate extends Federate {
         this.log("GasPumpOpen(" + gasPumpId + ", " + fuelType.getValue() + ")");
     }
 
-    protected void runSimulation() throws RTIexception {
+    void onUpdatedEntryQueue(int currentVehicleCount, int earliestVehicleId) {
+        // TODO: Add the vehicle to some lane queue if possible
+        // TODO: Use sendGetClientL1() to send interacion to EntryQueue
+    }
 
+    protected void runSimulation() throws RTIexception {
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+
+        // TODO: Create as many Lane instances (with appropriate IDs, etc.) as needed and put them into some list
+        Lane lane = rtiObjectFactory.createLane();
+        lane.setInitialAttributeValues(1, 0, 5, 0);
 
         for (int i = 0; i < ITERATIONS; i++) {
-            if (i % 5 == 0) {
-                this.sendGetClientL1(10);
-            }
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());
         }
-
 
     }
 

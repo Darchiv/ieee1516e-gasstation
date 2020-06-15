@@ -56,6 +56,24 @@ public final class RtiObjectFactory {
         }
     }
 
+    public void registerEntryQueue(boolean publish, boolean subscribe) {
+        try {
+            ObjectClassHandle classHandle = EntryQueue.registerClassHandle(this.rtiamb);
+            EntryQueue.registerHandles(this.rtiamb, classHandle, publish, subscribe);
+        } catch (RTIexception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void registerLane(boolean publish, boolean subscribe) {
+        try {
+            ObjectClassHandle classHandle = Lane.registerClassHandle(this.rtiamb);
+            Lane.registerHandles(this.rtiamb, classHandle, publish, subscribe);
+        } catch (RTIexception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Car createCar() {
         try {
             return new Car(this.rtiamb);
@@ -75,6 +93,22 @@ public final class RtiObjectFactory {
     public GasPump createGasPump() {
         try {
             return new GasPump(this.rtiamb);
+        } catch (RTIexception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public EntryQueue createEntryQueue() {
+        try {
+            return new EntryQueue(this.rtiamb);
+        } catch (RTIexception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Lane createLane() {
+        try {
+            return new Lane(this.rtiamb);
         } catch (RTIexception e) {
             throw new RuntimeException(e);
         }

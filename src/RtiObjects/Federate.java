@@ -1,6 +1,5 @@
 package RtiObjects;
 
-import RtiObjects.Ambassador;
 import hla.rti1516e.*;
 import hla.rti1516e.encoding.EncoderFactory;
 import hla.rti1516e.exceptions.FederatesCurrentlyJoined;
@@ -16,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Random;
 
 public abstract class Federate {
     private Logger logger;
@@ -29,9 +29,12 @@ public abstract class Federate {
     protected static final String federationName = "GasStation";
     public static final int ITERATIONS = 10;
 
+    protected Random random;
+
     public Federate(String name) {
         this.name = name;
         this.logger = new Logger(name);
+        this.random = new Random(123456L);
     }
 
     protected abstract void publishAndSubscribe() throws RTIexception;
@@ -116,7 +119,6 @@ public abstract class Federate {
         this.timeFactory = (HLAfloat64TimeFactory) rtiamb.getTimeFactory();
 
         this.announceReadySyncPoint(this.fedamb);
-        // TODO: Remove the need for pause
         this.waitForUser();
         this.achieveReadySyncPoint(this.fedamb);
 

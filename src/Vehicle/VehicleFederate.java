@@ -1,10 +1,17 @@
 package Vehicle;
 
-import RtiObjects.*;
-import hla.rti1516e.*;
+import RtiObjects.Car;
+import RtiObjects.Federate;
+import RtiObjects.RtiObjectFactory;
+import hla.rti1516e.InteractionClassHandle;
+import hla.rti1516e.ParameterHandle;
+import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class VehicleFederate extends Federate {
     // NewClient interaction
@@ -41,26 +48,32 @@ public class VehicleFederate extends Federate {
     }
 
     protected void runSimulation() throws RTIexception {
-        // TODO: This object must be created on request (randomly), not once
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
-        Car c1 = rtiObjectFactory.createCar();
-        c1.setInitialAttributeValues(1, false, 0, new FuelEnum("petrol"));
-        log("Registered Car, handle=" + c1);
+        int lastVehicleId = 1;
+        List<Car> cars = new LinkedList<>();
 
         for (int i = 0; i < ITERATIONS; i++) {
-//			updateAttributeValues( objectHandle );
-
-            if (i % 3 == 1) {
-                this.sendNewClient(i);
+            if (this.random.nextInt(4) == 0) {
+                Car c = rtiObjectFactory.createCar();
+                FuelEnum fuelEnum;
+                if (this.random.nextInt(2) == 0) {
+                    fuelEnum = new FuelEnum("petrol");
+                } else {
+                    fuelEnum = new FuelEnum("diesel");
+                }
+                c.setInitialAttributeValues(lastVehicleId, false, (int) this.fedamb.getFederateTime(), fuelEnum);
+                log("Registered Car, handle=" + c);
+                cars.add(c);
+                this.sendNewClient(lastVehicleId);
+                lastVehicleId += 1;
             }
 
             advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());
         }
 
-        // TODO: Vehicles must be deleted when requested by the Vehicle federate
-        c1.destroy();
-        log("Deleted Car, handle=" + c1);
+//        c.destroy();
+//        log("Deleted Car, handle=" + c1);
     }
 
     public static void main(String[] args) {

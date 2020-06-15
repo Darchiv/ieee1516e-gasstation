@@ -1,8 +1,7 @@
 package RtiObjects;
 
 import hla.rti1516e.*;
-import hla.rti1516e.encoding.EncoderFactory;
-import hla.rti1516e.exceptions.*;
+import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
@@ -47,6 +46,22 @@ public abstract class Vehicle extends RtiObject {
         }
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public boolean isFilled() {
+        return isFilled;
+    }
+
+    public int getTimeEntered() {
+        return timeEntered;
+    }
+
+    public FuelEnum getFuelType() {
+        return fuelType;
+    }
+
     void setId(int id) {
         this.id = id;
     }
@@ -82,6 +97,10 @@ public abstract class Vehicle extends RtiObject {
         if (subscribe) {
             rtiamb.subscribeObjectClassAttributes(classHandle, attributes);
         }
+    }
+
+    public static ObjectClassHandle getClassHandle() {
+        return classHandle;
     }
 
     protected static ObjectClassHandle registerClassHandle(RTIambassador rtiamb) throws RTIexception {

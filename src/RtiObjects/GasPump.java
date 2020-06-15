@@ -48,6 +48,22 @@ public class GasPump extends RtiObject {
         }
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public boolean isBusy() {
+        return isBusy;
+    }
+
+    public int getCurrentVehicleId() {
+        return currentVehicleId;
+    }
+
+    public FuelEnum getFuelType() {
+        return fuelType;
+    }
+
     void setId(int id) {
         this.id = id;
     }
@@ -83,6 +99,10 @@ public class GasPump extends RtiObject {
         if (subscribe) {
             rtiamb.subscribeObjectClassAttributes(classHandle, attributes);
         }
+    }
+
+    public static ObjectClassHandle getClassHandle() {
+        return classHandle;
     }
 
     protected static ObjectClassHandle registerClassHandle(RTIambassador rtiamb) throws RTIexception {

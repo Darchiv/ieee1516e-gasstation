@@ -1,9 +1,11 @@
 package GasPump;
 
-import RtiObjects.RtiObjectFactory;
-import hla.rti1516e.*;
-import hla.rti1516e.exceptions.RTIexception;
 import RtiObjects.Federate;
+import RtiObjects.RtiObjectFactory;
+import hla.rti1516e.InteractionClassHandle;
+import hla.rti1516e.ParameterHandle;
+import hla.rti1516e.ParameterHandleValueMap;
+import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
@@ -89,7 +91,7 @@ public class GasPumpFederate extends Federate {
 
         for (int i = 0; i < ITERATIONS; i++) {
             if (i % 5 == 0) {
-                this.sendGasPumpOpen(1,"diesel");
+                this.sendGasPumpOpen(1, "diesel");
             }
             if (i % 6 == 0) {
                 this.sendGetClientL2(10);

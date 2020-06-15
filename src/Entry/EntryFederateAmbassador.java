@@ -1,8 +1,8 @@
 package Entry;
 
+import RtiObjects.Ambassador;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
-import RtiObjects.Ambassador;
 import util.Uint32;
 
 public class EntryFederateAmbassador extends Ambassador {
