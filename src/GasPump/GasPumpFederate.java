@@ -108,6 +108,7 @@ public class GasPumpFederate extends Federate {
 
     protected void runSimulation() throws RTIexception {
 
+        // TODO: Send GasPumpOpen when a pump is opened (actually, at simulation start)
 
         for (int i = 0; i < ITERATIONS; i++) {
             if (i % 5 == 0) {
