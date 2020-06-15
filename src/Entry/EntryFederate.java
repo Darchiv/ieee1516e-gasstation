@@ -66,8 +66,6 @@ public class EntryFederate extends Federate {
         entryQueue.setInitialAttributeValues(0, 10, 0);
         log("Registered EntryQueue, handle=" + entryQueue);
 
-        entryQueue.updateQueue(45, 89);
-
         for (int i = 0; i < ITERATIONS; i++) {
 
             this.advanceTime(1.0);
