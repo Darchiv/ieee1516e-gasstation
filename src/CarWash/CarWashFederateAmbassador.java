@@ -1,15 +1,17 @@
-package Checkout;
+package CarWash;
 
+import Checkout.CheckoutFederate;
 import RtiObjects.Ambassador;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
 import util.Uint32;
 
-public class CheckoutFederateAmbassador extends Ambassador {
-    private CheckoutFederate federate;
+public class CarWashFederateAmbassador extends Ambassador {
 
-    public CheckoutFederateAmbassador(CheckoutFederate federate) {
-        super("CheckoutFederateAmbassador");
+    private CarWashFederate federate;
+
+    public CarWashFederateAmbassador(CarWashFederate federate) {
+        super("CarWashFederateAmbassador");
         this.federate = federate;
     }
 
@@ -31,32 +33,18 @@ public class CheckoutFederateAmbassador extends Ambassador {
                                    TransportationTypeHandle theTransport,
                                    LogicalTime time,
                                    OrderType receivedOrdering,
-                                   SupplementalReceiveInfo receiveInfo)
+                                   FederateAmbassador.SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
         super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
-        if (interactionClass.equals(this.federate.refueledInteractHandle)) {
-            byte[] vehicleIdRaw = theParameters.get(this.federate.refueledVehicleIdParamHandle);
-            if (vehicleIdRaw == null) {
-                throw new RuntimeException("Required parameter not supplied: vehicleId");
-            }
-
-            byte[] gasPumpIdRaw = theParameters.get(this.federate.refueledGasPumpIdParamHandle);
-            if (gasPumpIdRaw == null) {
-                throw new RuntimeException("Required parameter not supplied: gasPumpId");
-            }
-
-            int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            int gasPumpId = new Uint32(gasPumpIdRaw).getValue();
-            this.federate.onRefueled(vehicleId, gasPumpId);
-        } else if (interactionClass.equals(this.federate.washedInteractHandle))  {
-            byte[] vehicleIdRaw = theParameters.get(this.federate.washedVehicleIdParamHandle);
+        if (interactionClass.equals(this.federate.washPaidInteractHandle)) {
+            byte[] vehicleIdRaw = theParameters.get(this.federate.washPaidVehicleIdParamHandle);
             if (vehicleIdRaw == null) {
                 throw new RuntimeException("Required parameter not supplied: vehicleId");
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onWashed(vehicleId);
+            this.federate.onWashPaid(vehicleId);
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

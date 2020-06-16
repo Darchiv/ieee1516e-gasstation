@@ -10,9 +10,13 @@ import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 public class LanesFederate extends Federate {
     // Lane object
-    // TODO: Lanes list (uninitialized)
+    protected List lanes;
 
     // GetClientL1 interaction
     protected InteractionClassHandle getClientL1InteractHandle;
@@ -26,7 +30,6 @@ public class LanesFederate extends Federate {
     protected InteractionClassHandle gasPumpOpenInteractHandle;
     protected ParameterHandle gasPumpOpenGasPumpIdParamHandle;
     protected ParameterHandle gasPumpOpenFuelTypeParamHandle;
-
 
     public LanesFederate(String name) {
         super(name);
@@ -76,10 +79,13 @@ public class LanesFederate extends Federate {
         this.log("GetClientL2(" + vehicleId + ")");
     }
 
-    void onGasPumpOpen(int gasPumpId, FuelEnum fuelType) {
+    void onGasPumpOpen(int gasPumpId, FuelEnum fuelType) throws RTIexception {
         this.log("GasPumpOpen(" + gasPumpId + ", " + fuelType.getValue() + ")");
-
-        // TODO: Create a Lane for the gasPumpId given
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+        int earliestVehicleId = 0; // TODO: Get and assign last vehicle ID from Entry EntryQueue
+        Lane lane = rtiObjectFactory.createLane();
+        lane.setInitialAttributeValues(gasPumpId, 0, 5, earliestVehicleId);
+        lanes.add(lane);
     }
 
     void onUpdatedEntryQueue(int currentVehicleCount, int earliestVehicleId) {
@@ -95,9 +101,13 @@ public class LanesFederate extends Federate {
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
 
+        lanes = new ArrayList();
+
         // TODO: Create as many Lane instances (with appropriate IDs, etc.) as needed and put them into some list
         Lane lane = rtiObjectFactory.createLane();
         lane.setInitialAttributeValues(1, 0, 5, 0);
+
+        lanes.add(lane);
 
         for (int i = 0; i < ITERATIONS; i++) {
 

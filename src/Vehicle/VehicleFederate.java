@@ -23,6 +23,14 @@ public class VehicleFederate extends Federate {
     protected ParameterHandle fuelPaidVehicleIdParamHandle;
     protected ParameterHandle fuelPaidGasPumpIdParamHandle;
 
+    // WashPaid interaction
+    protected InteractionClassHandle washPaidInteractHandle;
+    protected ParameterHandle washPaidVehicleIdParamHandle;
+
+    // GoWash interaction
+    protected InteractionClassHandle goWashInteractHandle;
+    protected ParameterHandle goWashVehicleIdParamHandle;
+
     public VehicleFederate(String name) {
         super(name);
     }
@@ -41,12 +49,24 @@ public class VehicleFederate extends Federate {
         this.newClientVehicleIdParamHandle = rtiamb.getParameterHandle(this.newClientInteractHandle, "vehicleId");
         rtiamb.publishInteractionClass(this.newClientInteractHandle);
 
+        // Publish GoWash interaction
+
+        this.goWashInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.GoWash");
+        this.goWashVehicleIdParamHandle = rtiamb.getParameterHandle(this.goWashInteractHandle, "vehicleId");
+        rtiamb.publishInteractionClass(this.goWashInteractHandle);
+
         // Subscribe FuelPaid interaction
 
         this.fuelPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.FuelPaid");
         this.fuelPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "vehicleId");
         this.fuelPaidGasPumpIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "gasPumpId");
         rtiamb.subscribeInteractionClass(this.fuelPaidInteractHandle);
+
+        // Subscribe WashPaid interaction
+
+        this.washPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.washPaid");
+        this.washPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.washPaidInteractHandle, "vehicleId");
+        rtiamb.subscribeInteractionClass(this.washPaidInteractHandle);
 
 
         this.log("Published and Subscribed");
@@ -60,6 +80,10 @@ public class VehicleFederate extends Federate {
     }
 
     void onFuelPaid(int vehicleId, int gasPumpId) {
+        // TODO: Handle that
+    }
+
+    void onWashPaid(int vehicleId) {
         // TODO: Handle that
     }
 

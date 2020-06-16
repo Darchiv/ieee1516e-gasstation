@@ -16,10 +16,18 @@ public class CheckoutFederate extends Federate {
     protected ParameterHandle refueledVehicleIdParamHandle;
     protected ParameterHandle refueledGasPumpIdParamHandle;
 
+    // Washed interaction
+    protected InteractionClassHandle washedInteractHandle;
+    protected ParameterHandle washedVehicleIdParamHandle;
+
     // FuelPaid interaction
     protected InteractionClassHandle fuelPaidInteractHandle;
     protected ParameterHandle fuelPaidVehicleIdParamHandle;
     protected ParameterHandle fuelPaidGasPumpIdParamHandle;
+
+    // WashPaid interaction
+    protected InteractionClassHandle washPaidInteractHandle;
+    protected ParameterHandle washPaidVehicleIdParamHandle;
 
     public CheckoutFederate(String name) {
         super(name);
@@ -34,12 +42,24 @@ public class CheckoutFederate extends Federate {
         this.refueledGasPumpIdParamHandle = rtiamb.getParameterHandle(this.refueledInteractHandle, "gasPumpId");
         rtiamb.subscribeInteractionClass(this.refueledInteractHandle);
 
+        // Subscribe Washed interaction
+
+        this.washedInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.Refueled");
+        this.washedVehicleIdParamHandle = rtiamb.getParameterHandle(this.washedInteractHandle, "vehicleId");
+        rtiamb.subscribeInteractionClass(this.washedInteractHandle);
+
         // Publish FuelPaid interaction
 
         this.fuelPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.FuelPaid");
         this.fuelPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "vehicleId");
         this.fuelPaidGasPumpIdParamHandle = rtiamb.getParameterHandle(this.fuelPaidInteractHandle, "gasPumpId");
         rtiamb.publishInteractionClass(this.fuelPaidInteractHandle);
+
+        // Publish WashPaid interaction
+
+        this.washPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.WashPaid");
+        this.washPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.washPaidInteractHandle, "vehicleId");
+        rtiamb.publishInteractionClass(this.washPaidInteractHandle);
 
         this.log("Published and Subscribed");
     }
@@ -52,6 +72,10 @@ public class CheckoutFederate extends Federate {
     }
 
     void onRefueled(int vehicleId, int gasPumpId) {
+        // TODO: Handle that
+    }
+
+    void onWashed(int vehicleId) {
         // TODO: Handle that
     }
 

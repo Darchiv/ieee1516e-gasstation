@@ -58,6 +58,14 @@ public class VehicleFederateAmbassador extends Ambassador {
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
             int gasPumpId = new Uint32(gasPumpIdRaw).getValue();
             this.federate.onFuelPaid(vehicleId, gasPumpId);
+        } else if (interactionClass.equals(this.federate.washPaidInteractHandle)) {
+            byte[] vehicleIdRaw = theParameters.get(this.federate.washPaidVehicleIdParamHandle);
+            if (vehicleIdRaw == null) {
+                throw new RuntimeException("Required parameter not supplied: vehicleId");
+            }
+
+            int vehicleId = new Uint32(vehicleIdRaw).getValue();
+            this.federate.onWashPaid(vehicleId);
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }
