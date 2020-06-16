@@ -103,12 +103,6 @@ public class LanesFederate extends Federate {
 
         lanes = new ArrayList();
 
-        // TODO: Create as many Lane instances (with appropriate IDs, etc.) as needed and put them into some list
-        Lane lane = rtiObjectFactory.createLane();
-        lane.setInitialAttributeValues(1, 0, 5, 0);
-
-        lanes.add(lane);
-
         for (int i = 0; i < ITERATIONS; i++) {
 
             this.advanceTime(1.0);

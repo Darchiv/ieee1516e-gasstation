@@ -3,16 +3,13 @@ package CarWashQueueing;
 import CarWash.CarWashFederate;
 import CarWash.CarWashFederateAmbassador;
 import RtiObjects.Federate;
+import RtiObjects.RtiObjectFactory;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.exceptions.RTIexception;
 
 public class CarWashQueueingFederate extends Federate
 {
-
-    // CarWashQueue objectClass
-    // protected ObjectClassHandle carWashQueueObjHandle;
-
     // GoWash interaction
     protected InteractionClassHandle goWashInteractHandle;
     protected ParameterHandle goWashVehicleIdParamHandle;
@@ -27,8 +24,9 @@ public class CarWashQueueingFederate extends Federate
 
     @Override
     protected void publishAndSubscribe() throws RTIexception {
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
 
-        //TODO: Publish CarWashQueue objectClass
+        rtiObjectFactory.registerCarWashQueue(true, true);
 
         // Subscribe GetClientLW interaction
         this.getClientLWInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.GetClientLW");

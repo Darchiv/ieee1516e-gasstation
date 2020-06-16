@@ -5,6 +5,7 @@ import RtiObjects.EntryQueue;
 import RtiObjects.Vehicle;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
+import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
@@ -62,7 +63,11 @@ public class LanesFederateAmbassador extends Ambassador {
 
             int gasPumpId = new Uint32(gasPumpIdRaw).getValue();
             FuelEnum fuelType = new FuelEnum(fuelTypeRaw);
-            this.federate.onGasPumpOpen(gasPumpId, fuelType);
+            try {
+                this.federate.onGasPumpOpen(gasPumpId, fuelType);
+            } catch (RTIexception rtIexception) {
+                rtIexception.printStackTrace();
+            }
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

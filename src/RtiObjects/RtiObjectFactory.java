@@ -74,6 +74,15 @@ public final class RtiObjectFactory {
         }
     }
 
+    public void registerCarWashQueue(boolean publish, boolean subscribe) {
+        try {
+            ObjectClassHandle classHandle = CarWashQueue.registerClassHandle(this.rtiamb);
+            CarWashQueue.registerHandles(this.rtiamb, classHandle, publish, subscribe);
+        } catch (RTIexception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Car createCar() {
         try {
             return new Car(this.rtiamb);
@@ -109,6 +118,14 @@ public final class RtiObjectFactory {
     public Lane createLane() {
         try {
             return new Lane(this.rtiamb);
+        } catch (RTIexception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public CarWashQueue createCarWashQueue() {
+        try {
+            return new CarWashQueue(this.rtiamb);
         } catch (RTIexception e) {
             throw new RuntimeException(e);
         }
