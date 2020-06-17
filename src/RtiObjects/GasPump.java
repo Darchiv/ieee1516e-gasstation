@@ -68,7 +68,7 @@ public class GasPump extends RtiObject {
         this.id = id;
     }
 
-    void setIsBusy(boolean isBusy) {
+    public void setIsBusy(boolean isBusy) {
         this.isBusy = isBusy;
     }
 

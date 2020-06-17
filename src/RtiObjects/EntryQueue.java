@@ -41,6 +41,9 @@ public class EntryQueue extends RtiObject {
     }
 
     public void updateQueue(int currentVehicleCount, int earliestVehicleId) throws RTIexception {
+        this.currentVehicleCount = currentVehicleCount;
+        this.earliestVehicleId = earliestVehicleId;
+
         AttributeHandleValueMap attributes = rtiamb.getAttributeHandleValueMapFactory().create(2);
         attributes.put(currentVehicleCountAttrHandle, new Uint32(currentVehicleCount).getByteArray());
         attributes.put(earliestVehicleIdAttrHandle, new Uint32(earliestVehicleId).getByteArray());

@@ -8,7 +8,7 @@ public class Lane extends RtiObject {
     private static ObjectClassHandle classHandle;
 
     private int gasPumpId;
-    private int currentVehicleCount;
+    public int currentVehicleCount;
     private int maxVehicles;
     private int earliestVehicleId;
 
@@ -46,6 +46,9 @@ public class Lane extends RtiObject {
     }
 
     public void updateQueue(int currentVehicleCount, int earliestVehicleId) throws RTIexception {
+        this.currentVehicleCount = currentVehicleCount;
+        this.earliestVehicleId = earliestVehicleId;
+
         AttributeHandleValueMap attributes = rtiamb.getAttributeHandleValueMapFactory().create(3);
         attributes.put(gasPumpIdAttrHandle, new Uint32(gasPumpId).getByteArray());
         attributes.put(currentVehicleCountAttrHandle, new Uint32(currentVehicleCount).getByteArray());

@@ -8,11 +8,13 @@ import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class GasPumpFederate extends Federate {
-    List<GasPump> gasPumps = new ArrayList<>();
+    protected Map<Integer, FuelEnum> vehicleFuelTypeById = new HashMap<>();
+    protected Map<Integer, Integer> vehicleTimeEnteredById = new HashMap<>();
+    List<GasPumpInfo> gasPumpInfos = new ArrayList<>();
+    List<Integer> queueWaitingTimes = new ArrayList<>();
 
     // GetClientL2 interaction
     protected InteractionClassHandle getClientL2InteractHandle;
@@ -43,6 +45,7 @@ public class GasPumpFederate extends Federate {
 
         rtiObjectFactory.registerVehicle(true, true);
         rtiObjectFactory.registerGasPump(true, true);
+        rtiObjectFactory.registerLane(true, true);
 
         // Publish GetClientL2 interaction
 
@@ -101,13 +104,35 @@ public class GasPumpFederate extends Federate {
         // TODO: Handle that
     }
 
-    void onUpdatedLane(int gasPumpId, int currentVehicleCount, int earliestVehicleId) {
-        // TODO: Add the vehicle to appropriate gas pump and set it busy, schedule a "filled" event
-        // TODO: Use sendGetClientL2() to send interacion to Lane
+    void onUpdatedLane(int gasPumpId, int currentVehicleCount, int earliestVehicleId) throws RTIexception {
+        log("Lane(gasPumpId=" + gasPumpId + ", currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId=" + earliestVehicleId + ") updated");
+
+        if (currentVehicleCount == 0) {
+            return;
+        }
+
+        for (GasPumpInfo gasPumpInfo : gasPumpInfos) {
+            if (gasPumpId == gasPumpInfo.gasPump.getId() && !gasPumpInfo.gasPump.isBusy()) {
+                int vehicleId = earliestVehicleId;
+                int waitTime = this.getTimeAsInt() - vehicleTimeEnteredById.get(vehicleId);
+                int finishTime = this.getTimeAsInt() + 4 + this.random.nextInt(10);
+
+                log("Adding Vehicle(id=" + vehicleId + ") to GasPump(id=" + gasPumpInfo.gasPump.getId() + ") to finish at "
+                        + finishTime + ", after waiting in queue for " + waitTime);
+                queueWaitingTimes.add(waitTime);
+                gasPumpInfo.finishTime = finishTime;
+                gasPumpInfo.currentVehicleId = vehicleId;
+                gasPumpInfo.gasPump.setIsBusy(true);
+                sendGetClientL2(vehicleId);
+                break;
+            }
+        }
     }
 
-    void onUpdatedVehicle(int vehicleId, FuelEnum fuelType) {
-        // TODO: Store info about fueType of this vehicleId for future needs?
+    void onUpdatedVehicle(int vehicleId, int timeEntered, FuelEnum fuelType) {
+        log("Vehicle(" + vehicleId + ", timeEntered=" + timeEntered + ",fuelType=" + fuelType.getValue() + ") updated");
+        vehicleFuelTypeById.put(vehicleId, fuelType);
+        vehicleTimeEnteredById.put(vehicleId, timeEntered);
     }
 
     @Override
@@ -120,7 +145,7 @@ public class GasPumpFederate extends Federate {
                 onFuelPaid(fuelPaid.getVehicleId(), fuelPaid.getGasPumpId());
             } else if (event instanceof Vehicle) {
                 Vehicle vehicle = (Vehicle) event;
-                onUpdatedVehicle(vehicle.getId(), vehicle.getFuelType());
+                onUpdatedVehicle(vehicle.getId(), vehicle.getTimeEntered(), vehicle.getFuelType());
             } else if (event instanceof Lane) {
                 Lane lane = (Lane) event;
                 onUpdatedLane(lane.getGasPumpId(), lane.getCurrentVehicleCount(), lane.getEarliestVehicleId());
@@ -131,30 +156,45 @@ public class GasPumpFederate extends Federate {
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
 
-        int gi = 0;
-        for (; gi < 2; gi++) {
+        int gi = 1;
+        for (; gi < 3; gi++) {
             GasPump gasPump = rtiObjectFactory.createGasPump();
             String fuelType = "diesel";
             gasPump.setInitialAttributeValues(gi, false, 0, new FuelEnum(fuelType));
-            gasPumps.add(gasPump);
+            gasPumpInfos.add(new GasPumpInfo(gasPump));
             sendGasPumpOpen(gi, fuelType);
         }
-        for (; gi < 4; gi++) {
+        for (; gi < 5; gi++) {
             GasPump gasPump = rtiObjectFactory.createGasPump();
             String fuelType = "petrol";
             gasPump.setInitialAttributeValues(gi, false, 0, new FuelEnum(fuelType));
-            gasPumps.add(gasPump);
+            gasPumpInfos.add(new GasPumpInfo(gasPump));
             sendGasPumpOpen(gi, fuelType);
         }
 
         while (this.getTimeAsInt() < END_TIME) {
+            for (GasPumpInfo gasPumpInfo : gasPumpInfos) {
+                if (gasPumpInfo.gasPump.isBusy() && gasPumpInfo.finishTime <= this.getTimeAsInt()) {
+                    int vehicleId = gasPumpInfo.gasPump.getCurrentVehicleId();
+                    int gasPumpId = gasPumpInfo.gasPump.getId();
 
-            // TODO: Send Refueled interaction when a vehicle has been refuelled
+                    log("GasPump(id=" + gasPumpId + ") finished refuelling Vehicle(id="
+                            + vehicleId + ")");
+//                    gasPumpInfo.gasPump.setIsBusy(false);
+                    gasPumpInfo.finishTime = Integer.MAX_VALUE;
+                    this.sendRefueled(vehicleId, gasPumpId);
+                }
+            }
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());
         }
 
+        log("Waiting times: ");
+        for (Integer wt : queueWaitingTimes) {
+            System.out.print(wt + ", ");
+        }
+        System.out.print("\r\n");
 
     }
 
@@ -168,6 +208,16 @@ public class GasPumpFederate extends Federate {
             gasPumpFederate.runFederate(federateName);
         } catch (Exception rtie) {
             rtie.printStackTrace();
+        }
+    }
+
+    private class GasPumpInfo {
+        public int currentVehicleId;
+        public GasPump gasPump;
+        public int finishTime = 0;
+
+        public GasPumpInfo(GasPump gasPump) {
+            this.gasPump = gasPump;
         }
     }
 }

@@ -9,7 +9,14 @@ import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.exceptions.RTIexception;
 import util.Uint32;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class CheckoutFederate extends Federate {
+    protected Refueled currentlyServed = null;
+    protected Queue<Refueled> waitingQueue = new LinkedList<>();
+    protected int finishTime;
+
     // Refueled interaction
     protected InteractionClassHandle refueledInteractHandle;
     protected ParameterHandle refueledVehicleIdParamHandle;
@@ -70,8 +77,19 @@ public class CheckoutFederate extends Federate {
         rtiamb.sendInteraction(this.fuelPaidInteractHandle, parameters, generateTag());
     }
 
+    void handleCurrentVehicle() {
+
+    }
+
     void onRefueled(int vehicleId, int gasPumpId) {
-        // TODO: Handle that
+        if (currentlyServed == null) {
+            finishTime = this.getTimeAsInt() + 2 + this.random.nextInt(3);
+            currentlyServed = new Refueled(vehicleId, gasPumpId);
+            log("Vehicle(id=" + vehicleId + ") is now served, finish at " + finishTime);
+        } else {
+            waitingQueue.add(new Refueled(vehicleId, gasPumpId));
+            log("Vehicle(id=" + vehicleId + ") added to queue");
+        }
     }
 
     void onWashed(int vehicleId) {

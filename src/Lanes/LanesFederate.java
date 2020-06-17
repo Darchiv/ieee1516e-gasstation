@@ -12,7 +12,6 @@ import java.util.*;
 
 public class LanesFederate extends Federate {
     protected Map<Integer, FuelEnum> vehicleFuelTypeById = new HashMap<>();
-    int lastLaneId = 1;
     // Lane object
     protected List<LaneInfo> lanes = new ArrayList();
 
@@ -75,6 +74,14 @@ public class LanesFederate extends Federate {
 
     void onGetClientL2(int vehicleId) {
         this.log("GetClientL2(" + vehicleId + ")");
+
+        for (LaneInfo laneInfo : lanes) {
+            if (laneInfo.vehicleQueue.contains(vehicleId)) {
+                laneInfo.vehicleQueue.remove(vehicleId);
+                laneInfo.lane.currentVehicleCount -= 1;
+                break;
+            }
+        }
     }
 
     void onGasPumpOpen(int gasPumpId, FuelEnum fuelType) throws RTIexception {
@@ -84,8 +91,7 @@ public class LanesFederate extends Federate {
 
         Lane lane = rtiObjectFactory.createLane();
         lane.setInitialAttributeValues(gasPumpId, 0, 5, earliestVehicleId);
-        lanes.add(new LaneInfo(lastLaneId, lane, fuelType));
-        lastLaneId += 1;
+        lanes.add(new LaneInfo(gasPumpId, lane, fuelType));
     }
 
     void onUpdatedEntryQueue(int currentVehicleCount, int earliestVehicleId) throws RTIexception {
@@ -96,16 +102,28 @@ public class LanesFederate extends Federate {
 
         int vehicleId = earliestVehicleId;
 
+        int gasStationOfAppropriateTypeCount = 0;
+
         for (LaneInfo laneInfo : lanes) {
             FuelEnum fuelType = vehicleFuelTypeById.get(vehicleId);
-//            log("onUpdatedEntryQueue: iter vehicleFuelType=" + fuelType.getValue() + ", laneId=" + laneInfo.id + "," +
-//                    "currentVehicleCount=" + laneInfo.lane.getCurrentVehicleCount() + ", maxVehicles=" + laneInfo.lane.getMaxVehicles() +
-//                    "laneFuelType=" + laneInfo.fuelType.getValue());
+
             if (laneInfo.lane.getCurrentVehicleCount() < laneInfo.lane.getMaxVehicles()
                     && laneInfo.fuelType.equals(fuelType)) {
+                gasStationOfAppropriateTypeCount += 1;
+            }
+        }
+
+        int whichStation = this.random.nextInt(gasStationOfAppropriateTypeCount);
+
+        for (LaneInfo laneInfo : lanes) {
+            FuelEnum fuelType = vehicleFuelTypeById.get(vehicleId);
+
+            if (laneInfo.lane.getCurrentVehicleCount() < laneInfo.lane.getMaxVehicles()
+                    && laneInfo.fuelType.equals(fuelType) && whichStation-- == 0) {
                 laneInfo.vehicleQueue.add(vehicleId);
                 log("Added vehicleId=" + vehicleId + " (fuelType=" + fuelType.getValue() + ") to lane id=" + laneInfo.id);
                 this.sendGetClientL1(vehicleId);
+                laneInfo.lane.updateQueue(laneInfo.lane.getCurrentVehicleCount() + 1, laneInfo.vehicleQueue.peek());
                 break;
             }
         }

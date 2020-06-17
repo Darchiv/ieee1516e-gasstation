@@ -32,7 +32,7 @@ public class GasPumpFederateAmbassador extends Ambassador {
                                        OrderType receivedOrdering,
                                        SupplementalReflectInfo reflectInfo)
             throws FederateInternalError {
-        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
+//        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
 
         if (instanceToClassMap.get(theObject).equals(Lane.getClassHandle())) {
             Uint32 gasPumpId = null;
@@ -64,6 +64,7 @@ public class GasPumpFederateAmbassador extends Ambassador {
             this.federate.events.add(new Lane(gasPumpId.getValue(), currentVehicleCount.getValue(), maxVehiclesVal, earliestVehicleId.getValue()));
         } else if (instanceToClassMap.get(theObject).equals(Vehicle.getClassHandle())) {
             Uint32 id = null;
+            Uint32 timeEntered = null;
             FuelEnum fuelType = null;
 
             byte[] idRaw = theAttributes.get(Vehicle.getIdAttrHandle());
@@ -71,12 +72,17 @@ public class GasPumpFederateAmbassador extends Ambassador {
                 id = new Uint32(idRaw);
             }
 
+            byte[] timeEnteredRaw = theAttributes.get(Vehicle.getTimeEnteredAttrHandle());
+            if (timeEnteredRaw != null) {
+                timeEntered = new Uint32(timeEnteredRaw);
+            }
+
             byte[] fuelTypeRaw = theAttributes.get(Vehicle.getFuelTypeAttrHandle());
             if (fuelTypeRaw != null) {
                 fuelType = new FuelEnum(fuelTypeRaw);
             }
 
-            this.federate.events.add(new Vehicle(id.getValue(), false, 0, fuelType));
+            this.federate.events.add(new Vehicle(id.getValue(), false, timeEntered.getValue(), fuelType));
         }
     }
 
@@ -90,7 +96,7 @@ public class GasPumpFederateAmbassador extends Ambassador {
                                    OrderType receivedOrdering,
                                    SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
-        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
+//        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
         if (interactionClass.equals(this.federate.fuelPaidInteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.fuelPaidVehicleIdParamHandle);
