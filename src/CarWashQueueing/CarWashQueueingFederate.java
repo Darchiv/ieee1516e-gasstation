@@ -1,13 +1,19 @@
 package CarWashQueueing;
 
-import RtiObjects.Federate;
-import RtiObjects.RtiObjectFactory;
-import RtiObjects.WashPaid;
+import RtiObjects.*;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.exceptions.RTIexception;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class CarWashQueueingFederate extends Federate {
+    protected Queue<Integer> vehicleQueue = new LinkedList<>();
+
+    // CarWashQueue object
+    protected CarWashQueue carWashQueue;
+
     // GoWash interaction
     protected InteractionClassHandle goWashInteractHandle;
     protected ParameterHandle goWashVehicleIdParamHandle;
@@ -42,8 +48,18 @@ public class CarWashQueueingFederate extends Federate {
     void onWashPaid(int vehicleId) {
     }
 
+    void onGetClientLW(int vehicleId) {
+        this.log("GetClientLW(" + vehicleId + ")");
+
+        int vId = vehicleQueue.remove();
+
+        if (vId != vehicleId) {
+            throw new RuntimeException("A vehicle with earliest id must be requested");
+        }
+    }
+
     @Override
-    protected void processEvents() throws RTIexception {
+    protected void processEvents() {
         while (!events.isEmpty()) {
             Object event = events.remove();
 
@@ -56,9 +72,17 @@ public class CarWashQueueingFederate extends Federate {
 
     protected void runSimulation() throws RTIexception {
         while (this.getTimeAsInt() < END_TIME) {
+            RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+            int maxVehicles = 10;
+            carWashQueue = rtiObjectFactory.createCarWashQueue();
+            carWashQueue.setInitialAttributeValues(0, maxVehicles, 0);
+            log("Registered CarWashQueue(maxVehicles=" + maxVehicles + ")");
 
-            this.advanceTime(1.0);
-            log("Time Advanced to " + this.fedamb.getFederateTime());
+            while (this.getTimeAsInt() < END_TIME) {
+
+                this.advanceTime(1.0);
+                log("Time Advanced to " + this.fedamb.getFederateTime());
+            }
         }
     }
 
