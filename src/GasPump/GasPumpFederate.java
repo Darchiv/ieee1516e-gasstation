@@ -13,6 +13,7 @@ import java.util.*;
 public class GasPumpFederate extends Federate {
     protected Map<Integer, FuelEnum> vehicleFuelTypeById = new HashMap<>();
     protected Map<Integer, Integer> vehicleTimeEnteredById = new HashMap<>();
+    protected Map<Integer, Lane> gasPumpLane = new HashMap<>();
     List<GasPumpInfo> gasPumpInfos = new ArrayList<>();
     List<Integer> queueWaitingTimes = new ArrayList<>();
 
@@ -100,26 +101,40 @@ public class GasPumpFederate extends Federate {
         rtiamb.sendInteraction(this.refueledInteractHandle, parameters, generateTag());
     }
 
-    void onFuelPaid(int vehicleId, int gasPumpId) {
-        // TODO: Handle that
-    }
-
-    void onUpdatedLane(int gasPumpId, int currentVehicleCount, int earliestVehicleId) throws RTIexception {
-        log("Lane(gasPumpId=" + gasPumpId + ", currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId=" + earliestVehicleId + ") updated");
-
-        if (currentVehicleCount == 0) {
-            return;
-        }
+    void onFuelPaid(int vehicleId, int gasPumpId) throws RTIexception {
+        log("Vehicle(id=" + vehicleId + ") has finished checking out");
 
         for (GasPumpInfo gasPumpInfo : gasPumpInfos) {
-            if (gasPumpId == gasPumpInfo.gasPump.getId() && !gasPumpInfo.gasPump.isBusy()) {
-                int vehicleId = earliestVehicleId;
+            if (gasPumpInfo.gasPump.getId() == gasPumpId) {
+                gasPumpInfo.gasPump.setIsBusy(false);
+
+                if (gasPumpLane.get(gasPumpId).currentVehicleCount == 0) {
+                    log("No Vehicle for GasPump(id=" + gasPumpId + ")");
+                } else {
+                    handleNextVehicle(gasPumpId);
+                }
+                break;
+            }
+        }
+    }
+
+    void handleNextVehicle(int gasPumpId) throws RTIexception {
+        for (GasPumpInfo gasPumpInfo : gasPumpInfos) {
+            if (gasPumpId != gasPumpInfo.gasPump.getId()) {
+                continue;
+            }
+
+            Lane lane = gasPumpLane.get(gasPumpId);
+
+            if (lane.currentVehicleCount > 0 && !gasPumpInfo.gasPump.isBusy()) {
+                int vehicleId = lane.earliestVehicleId;
                 int waitTime = this.getTimeAsInt() - vehicleTimeEnteredById.get(vehicleId);
                 int finishTime = this.getTimeAsInt() + 4 + this.random.nextInt(10);
 
                 log("Adding Vehicle(id=" + vehicleId + ") to GasPump(id=" + gasPumpInfo.gasPump.getId() + ") to finish at "
                         + finishTime + ", after waiting in queue for " + waitTime);
                 queueWaitingTimes.add(waitTime);
+                lane.currentVehicleCount -= 1;
                 gasPumpInfo.finishTime = finishTime;
                 gasPumpInfo.currentVehicleId = vehicleId;
                 gasPumpInfo.gasPump.setIsBusy(true);
@@ -127,6 +142,16 @@ public class GasPumpFederate extends Federate {
                 break;
             }
         }
+    }
+
+    void onUpdatedLane(int gasPumpId, int currentVehicleCount, int earliestVehicleId) throws RTIexception {
+        log("Lane(gasPumpId=" + gasPumpId + ", currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId=" + earliestVehicleId + ") updated");
+        Lane lane = gasPumpLane.get(gasPumpId);
+        lane.gasPumpId = gasPumpId;
+        lane.currentVehicleCount = currentVehicleCount;
+        lane.earliestVehicleId = earliestVehicleId;
+
+        handleNextVehicle(gasPumpId);
     }
 
     void onUpdatedVehicle(int vehicleId, int timeEntered, FuelEnum fuelType) {
@@ -162,6 +187,7 @@ public class GasPumpFederate extends Federate {
             String fuelType = "diesel";
             gasPump.setInitialAttributeValues(gi, false, 0, new FuelEnum(fuelType));
             gasPumpInfos.add(new GasPumpInfo(gasPump));
+            gasPumpLane.put(gi, new Lane(gi, 0, 0, 0));
             sendGasPumpOpen(gi, fuelType);
         }
         for (; gi < 5; gi++) {
@@ -169,13 +195,14 @@ public class GasPumpFederate extends Federate {
             String fuelType = "petrol";
             gasPump.setInitialAttributeValues(gi, false, 0, new FuelEnum(fuelType));
             gasPumpInfos.add(new GasPumpInfo(gasPump));
+            gasPumpLane.put(gi, new Lane(gi, 0, 0, 0));
             sendGasPumpOpen(gi, fuelType);
         }
 
         while (this.getTimeAsInt() < END_TIME) {
             for (GasPumpInfo gasPumpInfo : gasPumpInfos) {
                 if (gasPumpInfo.gasPump.isBusy() && gasPumpInfo.finishTime <= this.getTimeAsInt()) {
-                    int vehicleId = gasPumpInfo.gasPump.getCurrentVehicleId();
+                    int vehicleId = gasPumpInfo.currentVehicleId;
                     int gasPumpId = gasPumpInfo.gasPump.getId();
 
                     log("GasPump(id=" + gasPumpId + ") finished refuelling Vehicle(id="

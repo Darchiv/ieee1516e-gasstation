@@ -7,10 +7,10 @@ import util.Uint32;
 public class Lane extends RtiObject {
     private static ObjectClassHandle classHandle;
 
-    private int gasPumpId;
+    public int gasPumpId;
     public int currentVehicleCount;
-    private int maxVehicles;
-    private int earliestVehicleId;
+    public int maxVehicles;
+    public int earliestVehicleId;
 
     protected static AttributeHandle gasPumpIdAttrHandle;
     protected static AttributeHandle currentVehicleCountAttrHandle;

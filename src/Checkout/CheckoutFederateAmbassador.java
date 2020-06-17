@@ -35,7 +35,7 @@ public class CheckoutFederateAmbassador extends Ambassador {
                                    OrderType receivedOrdering,
                                    SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
-        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
+//        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
         if (interactionClass.equals(this.federate.refueledInteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.refueledVehicleIdParamHandle);

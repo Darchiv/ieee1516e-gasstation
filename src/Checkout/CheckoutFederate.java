@@ -9,12 +9,13 @@ import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.exceptions.RTIexception;
 import util.Uint32;
 
+import java.sql.Ref;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class CheckoutFederate extends Federate {
-    protected Refueled currentlyServed = null;
-    protected Queue<Refueled> waitingQueue = new LinkedList<>();
+    protected CheckoutInfo currentlyServed = null;
+    protected Queue<CheckoutInfo> waitingQueue = new LinkedList<>();
     protected int finishTime;
 
     // Refueled interaction
@@ -77,23 +78,37 @@ public class CheckoutFederate extends Federate {
         rtiamb.sendInteraction(this.fuelPaidInteractHandle, parameters, generateTag());
     }
 
-    void handleCurrentVehicle() {
-
+    void sendWashPaid(int vehicleId) throws RTIexception {
+        ParameterHandleValueMap parameters = rtiamb.getParameterHandleValueMapFactory().create(1);
+        parameters.put(this.washPaidVehicleIdParamHandle, new Uint32(vehicleId).getByteArray());
+        rtiamb.sendInteraction(this.washedInteractHandle, parameters, generateTag());
     }
 
-    void onRefueled(int vehicleId, int gasPumpId) {
-        if (currentlyServed == null) {
+    void handleNext() {
+        if (currentlyServed == null && !waitingQueue.isEmpty()) {
+            CheckoutInfo checkoutInfo = waitingQueue.remove();
+
             finishTime = this.getTimeAsInt() + 2 + this.random.nextInt(3);
-            currentlyServed = new Refueled(vehicleId, gasPumpId);
-            log("Vehicle(id=" + vehicleId + ") is now served, finish at " + finishTime);
-        } else {
-            waitingQueue.add(new Refueled(vehicleId, gasPumpId));
-            log("Vehicle(id=" + vehicleId + ") added to queue");
+            currentlyServed = checkoutInfo;
+
+            if (checkoutInfo.refueled != null) {
+                log("Vehicle(id=" + checkoutInfo.refueled.getVehicleId() + ") after refuelling is now served, finish at " + finishTime);
+            } else {
+                log("Vehicle(id=" + checkoutInfo.washed.getVehicleId() + ") after washing is now served, finish at " + finishTime);
+            }
         }
     }
 
+    void onRefueled(int vehicleId, int gasPumpId) {
+        waitingQueue.add(new CheckoutInfo(new Refueled(vehicleId, gasPumpId)));
+        log("Refuelled Vehicle(id=" + vehicleId + ") added to queue");
+        handleNext();
+    }
+
     void onWashed(int vehicleId) {
-        // TODO: Handle that
+        waitingQueue.add(new CheckoutInfo(new Washed(vehicleId)));
+        log("Washed Vehicle(id=" + vehicleId + ") added to queue");
+        handleNext();
     }
 
     @Override
@@ -113,6 +128,19 @@ public class CheckoutFederate extends Federate {
 
     protected void runSimulation() throws RTIexception {
         while (this.getTimeAsInt() < END_TIME) {
+            if (currentlyServed != null && finishTime <= getTimeAsInt()) {
+                if (currentlyServed.refueled != null) {
+                    log("Finished handling Vehicle(id=" + currentlyServed.refueled.getVehicleId()
+                            + ") refuelled at GasPump(id=" + currentlyServed.refueled.getGasPumpId() + ")");
+                    sendFuelPaid(currentlyServed.refueled.getVehicleId(), currentlyServed.refueled.getGasPumpId());
+                } else {
+                    log("Finished handling washed Vehicle(id=" + currentlyServed.washed.getVehicleId() + ")");
+                    sendWashPaid(currentlyServed.washed.getVehicleId());
+                }
+
+                currentlyServed = null;
+                handleNext();
+            }
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());
@@ -129,6 +157,19 @@ public class CheckoutFederate extends Federate {
             checkoutFederate.runFederate(federateName);
         } catch (Exception rtie) {
             rtie.printStackTrace();
+        }
+    }
+
+    private class CheckoutInfo {
+        public Refueled refueled = null;
+        public Washed washed = null;
+
+        public CheckoutInfo(Refueled refueled) {
+            this.refueled = refueled;
+        }
+
+        public CheckoutInfo(Washed washed) {
+            this.washed = washed;
         }
     }
 }

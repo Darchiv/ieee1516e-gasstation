@@ -78,7 +78,9 @@ public class VehicleFederate extends Federate {
     }
 
     void onFuelPaid(int vehicleId, int gasPumpId) {
-        // TODO: Handle that
+        log("Vehicle(id=" + vehicleId + ") has paid");
+
+        // TODO: If a Car, roll a dice to go washing
     }
 
     void onWashPaid(int vehicleId) {
