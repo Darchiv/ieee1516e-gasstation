@@ -105,7 +105,7 @@ public class VehicleFederate extends Federate {
         int lastVehicleId = 1;
         List<Vehicle> vehicles = new LinkedList<>();
 
-        for (int i = 0; i < ITERATIONS; i++) {
+        while (this.getTimeAsInt() < END_TIME) {
             if (this.random.nextInt(4) == 0) {
                 Vehicle v;
                 if (this.random.nextInt(3) == 0) {
@@ -125,6 +125,12 @@ public class VehicleFederate extends Federate {
                 vehicles.add(v);
                 this.sendNewClient(lastVehicleId);
                 lastVehicleId += 1;
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
             advanceTime(1.0);

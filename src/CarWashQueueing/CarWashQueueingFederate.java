@@ -55,6 +55,11 @@ public class CarWashQueueingFederate extends Federate {
     }
 
     protected void runSimulation() throws RTIexception {
+        while (this.getTimeAsInt() < END_TIME) {
+
+            this.advanceTime(1.0);
+            log("Time Advanced to " + this.fedamb.getFederateTime());
+        }
     }
 
     public static void main(String[] args) {

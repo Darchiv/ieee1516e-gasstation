@@ -140,7 +140,7 @@ public class LanesFederate extends Federate {
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
 
-        for (int i = 0; i < ITERATIONS; i++) {
+        while (this.getTimeAsInt() < END_TIME) {
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());

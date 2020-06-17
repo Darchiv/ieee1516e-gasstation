@@ -34,7 +34,7 @@ public class LanesFederateAmbassador extends Ambassador {
                                    OrderType receivedOrdering,
                                    SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
-        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
+//        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
         if (interactionClass.equals(this.federate.getClientL2InteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.getClientL2VehicleIdParamHandle);
@@ -73,7 +73,7 @@ public class LanesFederateAmbassador extends Ambassador {
                                        OrderType receivedOrdering,
                                        SupplementalReflectInfo reflectInfo)
             throws FederateInternalError {
-        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
+//        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
 
         if (instanceToClassMap.get(theObject).equals(EntryQueue.getClassHandle())) {
             Uint32 maxVehicles = null;

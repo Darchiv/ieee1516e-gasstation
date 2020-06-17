@@ -91,7 +91,7 @@ public class EntryFederate extends Federate {
         entryQueue.setInitialAttributeValues(0, maxVehicles, 0);
         log("Registered EntryQueue(maxVehicles=" + maxVehicles + ")");
 
-        for (int i = 0; i < ITERATIONS; i++) {
+        while (this.getTimeAsInt() < END_TIME) {
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());

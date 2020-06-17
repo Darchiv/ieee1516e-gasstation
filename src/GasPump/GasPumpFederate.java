@@ -147,10 +147,7 @@ public class GasPumpFederate extends Federate {
             sendGasPumpOpen(gi, fuelType);
         }
 
-        for (int i = 0; i < ITERATIONS; i++) {
-            if (i % 6 == 0) {
-                this.sendGetClientL2(10);
-            }
+        while (this.getTimeAsInt() < END_TIME) {
 
             // TODO: Send Refueled interaction when a vehicle has been refuelled
 

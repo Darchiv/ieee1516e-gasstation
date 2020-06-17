@@ -6,6 +6,7 @@ import hla.rti1516e.exceptions.FederatesCurrentlyJoined;
 import hla.rti1516e.exceptions.FederationExecutionAlreadyExists;
 import hla.rti1516e.exceptions.FederationExecutionDoesNotExist;
 import hla.rti1516e.exceptions.RTIexception;
+import hla.rti1516e.time.HLAfloat64Interval;
 import hla.rti1516e.time.HLAfloat64Time;
 import hla.rti1516e.time.HLAfloat64TimeFactory;
 import util.Logger;
@@ -29,7 +30,7 @@ public abstract class Federate {
 
     protected static final String READY_TO_RUN = "ReadyToRun";
     protected static final String federationName = "GasStation";
-    public static final int ITERATIONS = 10;
+    public static final int END_TIME = 40;
 
     protected Random random;
     public Queue<Object> events = new LinkedList<>();
@@ -125,7 +126,7 @@ public abstract class Federate {
         this.waitForUser();
         this.achieveReadySyncPoint(this.fedamb);
 
-        // TODO: Enable time policies
+        this.enableTimePolicy();
 
         this.publishAndSubscribe();
         this.runSimulation();
@@ -133,6 +134,23 @@ public abstract class Federate {
     }
 
     protected void processEvents() throws RTIexception {
+    }
+
+    private void enableTimePolicy() throws Exception
+    {
+        HLAfloat64Interval lookahead = timeFactory.makeInterval( fedamb.federateLookahead );
+        this.rtiamb.enableTimeRegulation( lookahead );
+
+        while( fedamb.isRegulating == false ) {
+            rtiamb.evokeMultipleCallbacks( 0.1, 0.2 );
+        }
+
+        this.rtiamb.enableTimeConstrained();
+
+        while( fedamb.isConstrained == false )
+        {
+            rtiamb.evokeMultipleCallbacks( 0.1, 0.2 );
+        }
     }
 
     protected void advanceTime(double timestep) throws RTIexception {
