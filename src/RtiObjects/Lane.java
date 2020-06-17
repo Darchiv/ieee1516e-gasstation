@@ -17,6 +17,14 @@ public class Lane extends RtiObject {
     protected static AttributeHandle maxVehiclesAttrHandle;
     protected static AttributeHandle earliestVehicleIdAttrHandle;
 
+    public Lane(int gasPumpId, int currentVehicleCount, int maxVehicles, int earliestVehicleId) {
+        super();
+        this.gasPumpId = gasPumpId;
+        this.currentVehicleCount = currentVehicleCount;
+        this.maxVehicles = maxVehicles;
+        this.earliestVehicleId = earliestVehicleId;
+    }
+
     Lane(RTIambassador rtiamb) throws RTIexception {
         super(rtiamb);
 

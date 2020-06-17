@@ -15,6 +15,8 @@
 package Vehicle;
 
 import RtiObjects.Ambassador;
+import RtiObjects.FuelPaid;
+import RtiObjects.WashPaid;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
 import util.Uint32;
@@ -57,7 +59,7 @@ public class VehicleFederateAmbassador extends Ambassador {
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
             int gasPumpId = new Uint32(gasPumpIdRaw).getValue();
-            this.federate.onFuelPaid(vehicleId, gasPumpId);
+            this.federate.events.add(new FuelPaid(vehicleId, gasPumpId));
         } else if (interactionClass.equals(this.federate.washPaidInteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.washPaidVehicleIdParamHandle);
             if (vehicleIdRaw == null) {
@@ -65,7 +67,7 @@ public class VehicleFederateAmbassador extends Ambassador {
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onWashPaid(vehicleId);
+            this.federate.events.add(new WashPaid(vehicleId));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

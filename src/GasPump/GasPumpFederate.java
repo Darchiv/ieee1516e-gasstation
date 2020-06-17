@@ -1,7 +1,6 @@
 package GasPump;
 
-import RtiObjects.Federate;
-import RtiObjects.RtiObjectFactory;
+import RtiObjects.*;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.ParameterHandleValueMap;
@@ -9,7 +8,12 @@ import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GasPumpFederate extends Federate {
+    List<GasPump> gasPumps = new ArrayList<>();
+
     // GetClientL2 interaction
     protected InteractionClassHandle getClientL2InteractHandle;
     protected ParameterHandle getClientL2VehicleIdParamHandle;
@@ -106,14 +110,44 @@ public class GasPumpFederate extends Federate {
         // TODO: Store info about fueType of this vehicleId for future needs?
     }
 
-    protected void runSimulation() throws RTIexception {
+    @Override
+    protected void processEvents() throws RTIexception {
+        while (!events.isEmpty()) {
+            Object event = events.remove();
 
-        // TODO: Send GasPumpOpen when a pump is opened (actually, at simulation start)
+            if (event instanceof FuelPaid) {
+                FuelPaid fuelPaid = (FuelPaid) event;
+                onFuelPaid(fuelPaid.getVehicleId(), fuelPaid.getGasPumpId());
+            } else if (event instanceof Vehicle) {
+                Vehicle vehicle = (Vehicle) event;
+                onUpdatedVehicle(vehicle.getId(), vehicle.getFuelType());
+            } else if (event instanceof Lane) {
+                Lane lane = (Lane) event;
+                onUpdatedLane(lane.getGasPumpId(), lane.getCurrentVehicleCount(), lane.getEarliestVehicleId());
+            }
+        }
+    }
+
+    protected void runSimulation() throws RTIexception {
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+
+        int gi = 0;
+        for (; gi < 2; gi++) {
+            GasPump gasPump = rtiObjectFactory.createGasPump();
+            String fuelType = "diesel";
+            gasPump.setInitialAttributeValues(gi, false, 0, new FuelEnum(fuelType));
+            gasPumps.add(gasPump);
+            sendGasPumpOpen(gi, fuelType);
+        }
+        for (; gi < 4; gi++) {
+            GasPump gasPump = rtiObjectFactory.createGasPump();
+            String fuelType = "petrol";
+            gasPump.setInitialAttributeValues(gi, false, 0, new FuelEnum(fuelType));
+            gasPumps.add(gasPump);
+            sendGasPumpOpen(gi, fuelType);
+        }
 
         for (int i = 0; i < ITERATIONS; i++) {
-            if (i % 5 == 0) {
-                this.sendGasPumpOpen(1, "diesel");
-            }
             if (i % 6 == 0) {
                 this.sendGetClientL2(10);
             }

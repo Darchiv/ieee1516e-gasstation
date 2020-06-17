@@ -1,16 +1,10 @@
 package Lanes;
 
-import RtiObjects.Ambassador;
-import RtiObjects.EntryQueue;
-import RtiObjects.Vehicle;
+import RtiObjects.*;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
-import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LanesFederateAmbassador extends Ambassador {
     private LanesFederate federate;
@@ -49,7 +43,7 @@ public class LanesFederateAmbassador extends Ambassador {
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onGetClientL2(vehicleId);
+            this.federate.events.add(new GetClientL2(vehicleId));
         } else if (interactionClass.equals(this.federate.gasPumpOpenInteractHandle)) {
             byte[] gasPumpIdRaw = theParameters.get(this.federate.gasPumpOpenGasPumpIdParamHandle);
             if (gasPumpIdRaw == null) {
@@ -63,11 +57,7 @@ public class LanesFederateAmbassador extends Ambassador {
 
             int gasPumpId = new Uint32(gasPumpIdRaw).getValue();
             FuelEnum fuelType = new FuelEnum(fuelTypeRaw);
-            try {
-                this.federate.onGasPumpOpen(gasPumpId, fuelType);
-            } catch (RTIexception rtIexception) {
-                rtIexception.printStackTrace();
-            }
+            this.federate.events.add(new GasPumpOpen(gasPumpId, fuelType));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }
@@ -105,8 +95,8 @@ public class LanesFederateAmbassador extends Ambassador {
                 earliestVehicleId = new Uint32(earliestVehicleIdRaw);
             }
 
-            // TODO: Maybe use maxVehicles
-            this.federate.onUpdatedEntryQueue(currentVehicleCount.getValue(), earliestVehicleId.getValue());
+            int maxVehiclesVal = maxVehicles != null ? maxVehicles.getValue() : 0;
+            this.federate.events.add(new EntryQueue(currentVehicleCount.getValue(), maxVehiclesVal, earliestVehicleId.getValue()));
         } else if (instanceToClassMap.get(theObject).equals(Vehicle.getClassHandle())) {
             Uint32 id = null;
             FuelEnum fuelType = null;
@@ -121,7 +111,7 @@ public class LanesFederateAmbassador extends Ambassador {
                 fuelType = new FuelEnum(fuelTypeRaw);
             }
 
-            this.federate.onUpdatedVehicle(id.getValue(), fuelType);
+            this.federate.events.add(new Vehicle(id.getValue(), false, 0, fuelType));
         }
     }
 }

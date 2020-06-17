@@ -1,13 +1,10 @@
 package CarWash;
 
-import Checkout.CheckoutFederate;
 import RtiObjects.Ambassador;
 import RtiObjects.CarWashQueue;
-import RtiObjects.EntryQueue;
-import RtiObjects.Vehicle;
+import RtiObjects.WashPaid;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
-import util.FuelEnum;
 import util.Uint32;
 
 public class CarWashFederateAmbassador extends Ambassador {
@@ -48,7 +45,7 @@ public class CarWashFederateAmbassador extends Ambassador {
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onWashPaid(vehicleId);
+            this.federate.events.add(new WashPaid(vehicleId));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }
@@ -86,7 +83,8 @@ public class CarWashFederateAmbassador extends Ambassador {
                 earliestVehicleId = new Uint32(earliestVehicleIdRaw);
             }
 
-            this.federate.onUpdatedCarWashQueue(currentVehicleCount.getValue(), earliestVehicleId.getValue());
+            int maxVehiclesVal = maxVehicles != null ? maxVehicles.getValue() : 0;
+            this.federate.events.add(new CarWashQueue(currentVehicleCount.getValue(), maxVehiclesVal, earliestVehicleId.getValue()));
         }
     }
 }

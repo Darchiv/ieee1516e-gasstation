@@ -15,6 +15,13 @@ public class EntryQueue extends RtiObject {
     protected static AttributeHandle maxVehiclesAttrHandle;
     protected static AttributeHandle earliestVehicleIdAttrHandle;
 
+    public EntryQueue(int currentVehicleCount, int maxVehicles, int earliestVehicleId) {
+        super();
+        this.currentVehicleCount = currentVehicleCount;
+        this.maxVehicles = maxVehicles;
+        this.earliestVehicleId = earliestVehicleId;
+    }
+
     EntryQueue(RTIambassador rtiamb) throws RTIexception {
         super(rtiamb);
 

@@ -1,6 +1,8 @@
 package Entry;
 
 import RtiObjects.Ambassador;
+import RtiObjects.GetClientL1;
+import RtiObjects.NewClient;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
 import util.Uint32;
@@ -33,7 +35,7 @@ public class EntryFederateAmbassador extends Ambassador {
                                    OrderType receivedOrdering,
                                    SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
-        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
+//        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
         if (interactionClass.equals(this.federate.newClientInteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.newClientVehicleIdParamHandle);
@@ -42,7 +44,7 @@ public class EntryFederateAmbassador extends Ambassador {
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onNewClient(vehicleId);
+            this.federate.events.add(new NewClient(vehicleId));
         } else if (interactionClass.equals(this.federate.getClientL1InteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.getClientL1VehicleIdParamHandle);
             if (vehicleIdRaw == null) {
@@ -50,7 +52,7 @@ public class EntryFederateAmbassador extends Ambassador {
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onGetClientL1(vehicleId);
+            this.federate.events.add(new GetClientL1(vehicleId));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

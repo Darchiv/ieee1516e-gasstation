@@ -1,18 +1,14 @@
 package CarWash;
 
-import Checkout.CheckoutFederate;
-import Checkout.CheckoutFederateAmbassador;
+import RtiObjects.CarWashQueue;
 import RtiObjects.Federate;
 import RtiObjects.RtiObjectFactory;
+import RtiObjects.WashPaid;
 import hla.rti1516e.InteractionClassHandle;
-import hla.rti1516e.ObjectClassHandle;
 import hla.rti1516e.ParameterHandle;
-import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.exceptions.RTIexception;
-import util.Uint32;
 
-public class CarWashFederate extends Federate
-{
+public class CarWashFederate extends Federate {
     // Washed interaction
     protected InteractionClassHandle washedInteractHandle;
     protected ParameterHandle washedVehicleIdParamHandle;
@@ -54,6 +50,21 @@ public class CarWashFederate extends Federate
     }
 
     void onWashPaid(int vehicleId) {
+    }
+
+    @Override
+    protected void processEvents() throws RTIexception {
+        while (!events.isEmpty()) {
+            Object event = events.remove();
+
+            if (event instanceof WashPaid) {
+                WashPaid washPaid = (WashPaid) event;
+                onWashPaid(washPaid.getVehicleId());
+            } else if (event instanceof CarWashQueue) {
+                CarWashQueue carWashQueue = (CarWashQueue) event;
+                onUpdatedCarWashQueue(carWashQueue.getCurrentVehicleCount(), carWashQueue.getEarliestVehicleId());
+            }
+        }
     }
 
     void onUpdatedCarWashQueue(int currentVehicleCount, int earliestVehicleId) {

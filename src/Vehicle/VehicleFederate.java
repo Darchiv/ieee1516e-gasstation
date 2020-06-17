@@ -1,8 +1,6 @@
 package Vehicle;
 
-import RtiObjects.Car;
-import RtiObjects.Federate;
-import RtiObjects.RtiObjectFactory;
+import RtiObjects.*;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.ParameterHandleValueMap;
@@ -87,23 +85,44 @@ public class VehicleFederate extends Federate {
         // TODO: Handle that
     }
 
+    @Override
+    protected void processEvents() throws RTIexception {
+        while (!events.isEmpty()) {
+            Object event = events.remove();
+
+            if (event instanceof FuelPaid) {
+                FuelPaid fuelPaid = (FuelPaid) event;
+                onFuelPaid(fuelPaid.getVehicleId(), fuelPaid.getVehicleId());
+            } else if (event instanceof WashPaid) {
+                WashPaid washPaid = (WashPaid) event;
+                onWashPaid(washPaid.getVehicleId());
+            }
+        }
+    }
+
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
         int lastVehicleId = 1;
-        List<Car> cars = new LinkedList<>();
+        List<Vehicle> vehicles = new LinkedList<>();
 
         for (int i = 0; i < ITERATIONS; i++) {
             if (this.random.nextInt(4) == 0) {
-                Car c = rtiObjectFactory.createCar();
+                Vehicle v;
+                if (this.random.nextInt(3) == 0) {
+                    v = rtiObjectFactory.createMotorcycle();
+                    log("Created Motorcycle(id=" + lastVehicleId + ")");
+                } else {
+                    v = rtiObjectFactory.createCar();
+                    log("Created Car(id=" + lastVehicleId + ")");
+                }
                 FuelEnum fuelEnum;
                 if (this.random.nextInt(2) == 0) {
                     fuelEnum = new FuelEnum("petrol");
                 } else {
                     fuelEnum = new FuelEnum("diesel");
                 }
-                c.setInitialAttributeValues(lastVehicleId, false, (int) this.fedamb.getFederateTime(), fuelEnum);
-                log("Registered Car, handle=" + c);
-                cars.add(c);
+                v.setInitialAttributeValues(lastVehicleId, false, (int) this.fedamb.getFederateTime(), fuelEnum);
+                vehicles.add(v);
                 this.sendNewClient(lastVehicleId);
                 lastVehicleId += 1;
             }

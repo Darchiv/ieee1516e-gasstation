@@ -1,7 +1,7 @@
 package CarWashQueueing;
 
-import CarWash.CarWashFederate;
 import RtiObjects.Ambassador;
+import RtiObjects.WashPaid;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
 import util.Uint32;
@@ -44,7 +44,7 @@ public class CarWashQueueingFederateAmbassador extends Ambassador {
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.onWashPaid(vehicleId);
+            this.federate.events.add(new WashPaid(vehicleId));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

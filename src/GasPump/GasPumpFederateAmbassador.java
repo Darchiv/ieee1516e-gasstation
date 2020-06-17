@@ -1,7 +1,7 @@
 package GasPump;
 
 import RtiObjects.Ambassador;
-import RtiObjects.EntryQueue;
+import RtiObjects.FuelPaid;
 import RtiObjects.Lane;
 import RtiObjects.Vehicle;
 import hla.rti1516e.*;
@@ -60,8 +60,8 @@ public class GasPumpFederateAmbassador extends Ambassador {
                 earliestVehicleId = new Uint32(earliestVehicleIdRaw);
             }
 
-            // TODO: Maybe use maxVehicles
-            this.federate.onUpdatedLane(gasPumpId.getValue(), currentVehicleCount.getValue(), earliestVehicleId.getValue());
+            int maxVehiclesVal = maxVehicles != null ? maxVehicles.getValue() : 0;
+            this.federate.events.add(new Lane(gasPumpId.getValue(), currentVehicleCount.getValue(), maxVehiclesVal, earliestVehicleId.getValue()));
         } else if (instanceToClassMap.get(theObject).equals(Vehicle.getClassHandle())) {
             Uint32 id = null;
             FuelEnum fuelType = null;
@@ -76,7 +76,7 @@ public class GasPumpFederateAmbassador extends Ambassador {
                 fuelType = new FuelEnum(fuelTypeRaw);
             }
 
-            this.federate.onUpdatedVehicle(id.getValue(), fuelType);
+            this.federate.events.add(new Vehicle(id.getValue(), false, 0, fuelType));
         }
     }
 
@@ -105,7 +105,7 @@ public class GasPumpFederateAmbassador extends Ambassador {
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
             int gasPumpId = new Uint32(gasPumpIdRaw).getValue();
-            this.federate.onFuelPaid(vehicleId, gasPumpId);
+            this.federate.events.add(new FuelPaid(vehicleId, gasPumpId));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

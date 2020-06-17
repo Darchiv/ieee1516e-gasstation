@@ -2,6 +2,7 @@ package util;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class FuelEnum {
     private String value;
@@ -26,5 +27,18 @@ public class FuelEnum {
     public byte[] getByteArray() {
         // UTF-8 Encode
         return value.getBytes(UTF8_CHARSET);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FuelEnum fuelEnum = (FuelEnum) o;
+        return value.equals(fuelEnum.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }

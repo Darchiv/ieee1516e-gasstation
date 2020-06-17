@@ -1,13 +1,15 @@
 package Entry;
 
-import RtiObjects.EntryQueue;
-import RtiObjects.Federate;
-import RtiObjects.RtiObjectFactory;
+import RtiObjects.*;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.exceptions.RTIexception;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class EntryFederate extends Federate {
+    protected Queue<Integer> vehicleQueue = new LinkedList<>();
     // EntryQueue object
     protected EntryQueue entryQueue;
 
@@ -47,24 +49,47 @@ public class EntryFederate extends Federate {
         this.log("Published and Subscribed");
     }
 
-    protected void onNewClient(int vehicleId) {
+    protected void onNewClient(int vehicleId) throws RTIexception {
         this.log("NewClient(" + vehicleId + ")");
+        vehicleQueue.add(vehicleId);
 
-        // TODO: Add this vehicleId to a queue
-        // TODO: Update entryQueue accordingly to notify Lanes
+        int currentVehicleCount = vehicleQueue.size();
+        int earliestVehicleId = vehicleQueue.peek();
+        log("Updating EntryQueue to currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId=" + earliestVehicleId);
+        entryQueue.updateQueue(currentVehicleCount, earliestVehicleId);
     }
 
     protected void onGetClientL1(int vehicleId) {
         this.log("GetClientL1(" + vehicleId + ")");
 
-        // TODO: Update queue (client was removed)
+        int vId = vehicleQueue.remove();
+
+        if (vId != vehicleId) {
+            throw new RuntimeException("A vehicle with earliest id must be requested");
+        }
+    }
+
+    @Override
+    protected void processEvents() throws RTIexception {
+        while (!events.isEmpty()) {
+            Object event = events.remove();
+
+            if (event instanceof NewClient) {
+                NewClient newClient = (NewClient) event;
+                onNewClient(newClient.getVehicleId());
+            } else if (event instanceof GetClientL1) {
+                GetClientL1 getClientL1 = (GetClientL1) event;
+                onGetClientL1(getClientL1.getVehicleId());
+            }
+        }
     }
 
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+        int maxVehicles = 10;
         entryQueue = rtiObjectFactory.createEntryQueue();
-        entryQueue.setInitialAttributeValues(0, 10, 0);
-        log("Registered EntryQueue, handle=" + entryQueue);
+        entryQueue.setInitialAttributeValues(0, maxVehicles, 0);
+        log("Registered EntryQueue(maxVehicles=" + maxVehicles + ")");
 
         for (int i = 0; i < ITERATIONS; i++) {
 

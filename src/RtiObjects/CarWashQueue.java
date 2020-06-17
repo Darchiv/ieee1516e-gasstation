@@ -15,6 +15,13 @@ public class CarWashQueue extends RtiObject {
     protected static AttributeHandle maxVehiclesAttrHandle;
     protected static AttributeHandle earliestVehicleIdAttrHandle;
 
+    public CarWashQueue(int currentVehicleCount, int maxVehicles, int earliestVehicleId) {
+        super();
+        this.currentVehicleCount = currentVehicleCount;
+        this.maxVehicles = maxVehicles;
+        this.earliestVehicleId = earliestVehicleId;
+    }
+
     CarWashQueue(RTIambassador rtiamb) throws RTIexception {
         super(rtiamb);
 

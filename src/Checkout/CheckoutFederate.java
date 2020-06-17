@@ -1,9 +1,8 @@
 package Checkout;
 
-import Entry.EntryFederate;
-import Entry.EntryFederateAmbassador;
 import RtiObjects.Federate;
-import RtiObjects.RtiObjectFactory;
+import RtiObjects.Refueled;
+import RtiObjects.Washed;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.ParameterHandleValueMap;
@@ -77,6 +76,21 @@ public class CheckoutFederate extends Federate {
 
     void onWashed(int vehicleId) {
         // TODO: Handle that
+    }
+
+    @Override
+    protected void processEvents() throws RTIexception {
+        while (!events.isEmpty()) {
+            Object event = events.remove();
+
+            if (event instanceof Refueled) {
+                Refueled refueled = (Refueled) event;
+                onRefueled(refueled.getVehicleId(), refueled.getGasPumpId());
+            } else if (event instanceof Washed) {
+                Washed washed = (Washed) event;
+                onWashed(washed.getVehicleId());
+            }
+        }
     }
 
     protected void runSimulation() throws RTIexception {

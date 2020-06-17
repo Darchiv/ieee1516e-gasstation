@@ -17,6 +17,10 @@ public abstract class RtiObject {
         this.rtiamb = rtiamb;
     }
 
+    public RtiObject() {
+
+    }
+
     public String toString() {
         return instance.toString();
     }

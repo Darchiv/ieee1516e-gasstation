@@ -5,7 +5,7 @@ import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
-public abstract class Vehicle extends RtiObject {
+public class Vehicle extends RtiObject {
     private static ObjectClassHandle classHandle;
 
     private int id;
@@ -17,6 +17,14 @@ public abstract class Vehicle extends RtiObject {
     protected static AttributeHandle isFilledAttrHandle;
     protected static AttributeHandle timeEnteredAttrHandle;
     protected static AttributeHandle fuelTypeAttrHandle;
+
+    public Vehicle(int id, boolean isFilled, int timeEntered, FuelEnum fuelType) {
+        super();
+        this.id = id;
+        this.isFilled = isFilled;
+        this.timeEntered = timeEntered;
+        this.fuelType = fuelType;
+    }
 
     Vehicle(RTIambassador rtiamb) throws RTIexception {
         super(rtiamb);

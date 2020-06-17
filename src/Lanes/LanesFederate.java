@@ -1,8 +1,6 @@
 package Lanes;
 
-import RtiObjects.Federate;
-import RtiObjects.Lane;
-import RtiObjects.RtiObjectFactory;
+import RtiObjects.*;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
 import hla.rti1516e.ParameterHandleValueMap;
@@ -10,13 +8,13 @@ import hla.rti1516e.exceptions.RTIexception;
 import util.FuelEnum;
 import util.Uint32;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class LanesFederate extends Federate {
+    protected Map<Integer, FuelEnum> vehicleFuelTypeById = new HashMap<>();
+    int lastLaneId = 1;
     // Lane object
-    protected List lanes;
+    protected List<LaneInfo> lanes = new ArrayList();
 
     // GetClientL1 interaction
     protected InteractionClassHandle getClientL1InteractHandle;
@@ -83,25 +81,64 @@ public class LanesFederate extends Federate {
         this.log("GasPumpOpen(" + gasPumpId + ", " + fuelType.getValue() + ")");
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
         int earliestVehicleId = 0; // TODO: Get and assign last vehicle ID from Entry EntryQueue
+
         Lane lane = rtiObjectFactory.createLane();
         lane.setInitialAttributeValues(gasPumpId, 0, 5, earliestVehicleId);
-        lanes.add(lane);
+        lanes.add(new LaneInfo(lastLaneId, lane, fuelType));
+        lastLaneId += 1;
     }
 
-    void onUpdatedEntryQueue(int currentVehicleCount, int earliestVehicleId) {
-        // TODO: Add the vehicle to some lane queue if possible
-        // TODO: Use sendGetClientL1() to send interacion to EntryQueue
+    void onUpdatedEntryQueue(int currentVehicleCount, int earliestVehicleId) throws RTIexception {
+        log("EntryQueue(currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId=" + earliestVehicleId + ") updated");
+        if (currentVehicleCount == 0) {
+            return;
+        }
+
+        int vehicleId = earliestVehicleId;
+
+        for (LaneInfo laneInfo : lanes) {
+            FuelEnum fuelType = vehicleFuelTypeById.get(vehicleId);
+//            log("onUpdatedEntryQueue: iter vehicleFuelType=" + fuelType.getValue() + ", laneId=" + laneInfo.id + "," +
+//                    "currentVehicleCount=" + laneInfo.lane.getCurrentVehicleCount() + ", maxVehicles=" + laneInfo.lane.getMaxVehicles() +
+//                    "laneFuelType=" + laneInfo.fuelType.getValue());
+            if (laneInfo.lane.getCurrentVehicleCount() < laneInfo.lane.getMaxVehicles()
+                    && laneInfo.fuelType.equals(fuelType)) {
+                laneInfo.vehicleQueue.add(vehicleId);
+                log("Added vehicleId=" + vehicleId + " (fuelType=" + fuelType.getValue() + ") to lane id=" + laneInfo.id);
+                this.sendGetClientL1(vehicleId);
+                break;
+            }
+        }
     }
 
     void onUpdatedVehicle(int vehicleId, FuelEnum fuelType) {
-        // TODO: Store info about fueType of this vehicleId for future needs - move the vehicle
-        // into an appropriate lane when time for it comes
+        log("Vehicle(" + vehicleId + ", fuelType=" + fuelType.getValue() + ") updated");
+        vehicleFuelTypeById.put(vehicleId, fuelType);
+    }
+
+    @Override
+    protected void processEvents() throws RTIexception {
+        while (!events.isEmpty()) {
+            Object event = events.remove();
+
+            if (event instanceof GasPumpOpen) {
+                GasPumpOpen gasPumpOpen = (GasPumpOpen) event;
+                onGasPumpOpen(gasPumpOpen.getGasPumpId(), gasPumpOpen.getFuelType());
+            } else if (event instanceof GetClientL2) {
+                GetClientL2 getClientL2 = (GetClientL2) event;
+                onGetClientL2(getClientL2.getVehicleId());
+            } else if (event instanceof EntryQueue) {
+                EntryQueue entryQueue = (EntryQueue) event;
+                onUpdatedEntryQueue(entryQueue.getCurrentVehicleCount(), entryQueue.getEarliestVehicleId());
+            } else if (event instanceof Vehicle) {
+                Vehicle vehicle = (Vehicle) event;
+                onUpdatedVehicle(vehicle.getId(), vehicle.getFuelType());
+            }
+        }
     }
 
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
-
-        lanes = new ArrayList();
 
         for (int i = 0; i < ITERATIONS; i++) {
 
@@ -121,6 +158,19 @@ public class LanesFederate extends Federate {
             lanesFederate.runFederate(federateName);
         } catch (Exception rtie) {
             rtie.printStackTrace();
+        }
+    }
+
+    private class LaneInfo {
+        public int id;
+        public Lane lane;
+        public FuelEnum fuelType;
+        public Queue<Integer> vehicleQueue = new LinkedList<>();
+
+        public LaneInfo(int id, Lane lane, FuelEnum fuelType) {
+            this.id = id;
+            this.lane = lane;
+            this.fuelType = fuelType;
         }
     }
 }

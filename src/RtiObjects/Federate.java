@@ -15,6 +15,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 public abstract class Federate {
@@ -30,6 +32,7 @@ public abstract class Federate {
     public static final int ITERATIONS = 10;
 
     protected Random random;
+    public Queue<Object> events = new LinkedList<>();
 
     public Federate(String name) {
         this.name = name;
@@ -129,13 +132,17 @@ public abstract class Federate {
         this.resignAndDestroyFederation();
     }
 
+    protected void processEvents() throws RTIexception {
+    }
+
     protected void advanceTime(double timestep) throws RTIexception {
         this.fedamb.isAdvancing = true;
         HLAfloat64Time time = timeFactory.makeTime(this.fedamb.federateTime + timestep);
         rtiamb.timeAdvanceRequest(time);
 
-        while (fedamb.isAdvancing) {
+        while (fedamb.isAdvancing || !this.events.isEmpty()) {
             rtiamb.evokeMultipleCallbacks(0.1, 0.2);
+            this.processEvents();
         }
     }
 
