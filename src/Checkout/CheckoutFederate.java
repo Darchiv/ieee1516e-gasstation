@@ -81,7 +81,7 @@ public class CheckoutFederate extends Federate {
     void sendWashPaid(int vehicleId) throws RTIexception {
         ParameterHandleValueMap parameters = rtiamb.getParameterHandleValueMapFactory().create(1);
         parameters.put(this.washPaidVehicleIdParamHandle, new Uint32(vehicleId).getByteArray());
-        rtiamb.sendInteraction(this.washedInteractHandle, parameters, generateTag());
+        rtiamb.sendInteraction(this.washPaidInteractHandle, parameters, generateTag());
     }
 
     void handleNext() {

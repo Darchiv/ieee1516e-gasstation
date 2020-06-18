@@ -118,9 +118,9 @@ public class VehicleFederate extends Federate {
             }
         }
 
-        int totalTime = totalTime = getTimeAsInt() - v.getTimeEntered();
+//        int totalTime = totalTime = getTimeAsInt() - v.getTimeEntered();
 
-        log("Vehicle(id=" + vehicleId + ") has paid for washing, total time on the station: " + totalTime);
+        log("Vehicle(id=" + vehicleId + ") has paid for washing, total time on the station: ");
     }
 
     @Override
