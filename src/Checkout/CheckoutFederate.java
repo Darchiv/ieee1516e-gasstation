@@ -51,7 +51,7 @@ public class CheckoutFederate extends Federate {
 
         // Subscribe Washed interaction
 
-        this.washedInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.Refueled");
+        this.washedInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.Washed");
         this.washedVehicleIdParamHandle = rtiamb.getParameterHandle(this.washedInteractHandle, "vehicleId");
         rtiamb.subscribeInteractionClass(this.washedInteractHandle);
 

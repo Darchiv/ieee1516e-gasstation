@@ -64,7 +64,7 @@ public class VehicleFederate extends Federate {
 
         // Subscribe WashPaid interaction
 
-        this.washPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.washPaid");
+        this.washPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.WashPaid");
         this.washPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.washPaidInteractHandle, "vehicleId");
         rtiamb.subscribeInteractionClass(this.washPaidInteractHandle);
 
@@ -99,16 +99,28 @@ public class VehicleFederate extends Federate {
 
         int totalTime = totalTime = getTimeAsInt() - v.getTimeEntered();
 
-        log("Vehicle(id=" + vehicleId + ") has paid, total time on the station: " + totalTime);
+        log("Vehicle(id=" + vehicleId + ") has paid for refuelling, total time on the station: " + totalTime);
 
-        if (v instanceof Car) {
+        if (v instanceof Car && random.nextInt(2) == 0) {
             log("Car(id=" + vehicleId + ") goes washing");
             sendGoWash(vehicleId);
         }
     }
 
     void onWashPaid(int vehicleId) {
-        // TODO: Handle that
+        Vehicle v = null;
+
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getId() == vehicleId) {
+                v = vehicle;
+                vehicles.remove(vehicle);
+                break;
+            }
+        }
+
+        int totalTime = totalTime = getTimeAsInt() - v.getTimeEntered();
+
+        log("Vehicle(id=" + vehicleId + ") has paid for washing, total time on the station: " + totalTime);
     }
 
     @Override

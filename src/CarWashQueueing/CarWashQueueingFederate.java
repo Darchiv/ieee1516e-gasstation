@@ -40,7 +40,7 @@ public class CarWashQueueingFederate extends Federate {
         // Subscribe GoWash interaction
         this.goWashInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.GoWash");
         this.goWashVehicleIdParamHandle = rtiamb.getParameterHandle(this.goWashInteractHandle, "vehicleId");
-        rtiamb.subscribeInteractionClass(this.getClientLWInteractHandle);
+        rtiamb.subscribeInteractionClass(this.goWashInteractHandle);
 
         this.log("Published and Subscribed");
     }

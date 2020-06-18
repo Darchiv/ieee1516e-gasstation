@@ -51,7 +51,7 @@ public class CarWashFederate extends Federate {
         // Subscribe WashPaid interaction
         this.washPaidInteractHandle = rtiamb.getInteractionClassHandle("HLAinteractionRoot.WashPaid");
         this.washPaidVehicleIdParamHandle = rtiamb.getParameterHandle(this.washPaidInteractHandle, "vehicleId");
-        rtiamb.subscribeInteractionClass(this.getClientLWInteractHandle);
+        rtiamb.subscribeInteractionClass(this.washPaidInteractHandle);
 
         this.log("Published and Subscribed");
     }

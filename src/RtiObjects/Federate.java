@@ -30,7 +30,7 @@ public abstract class Federate {
 
     protected static final String READY_TO_RUN = "ReadyToRun";
     protected static final String federationName = "GasStation";
-    public static final int END_TIME = 40;
+    public static final int END_TIME = 100;
 
     protected Random random;
     public Queue<Object> events = new LinkedList<>();
