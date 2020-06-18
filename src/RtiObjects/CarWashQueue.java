@@ -7,9 +7,9 @@ import util.Uint32;
 public class CarWashQueue extends RtiObject {
     private static ObjectClassHandle classHandle;
 
-    private int currentVehicleCount;
-    private int maxVehicles;
-    private int earliestVehicleId;
+    public int currentVehicleCount;
+    public int maxVehicles;
+    public int earliestVehicleId;
 
     protected static AttributeHandle currentVehicleCountAttrHandle;
     protected static AttributeHandle maxVehiclesAttrHandle;

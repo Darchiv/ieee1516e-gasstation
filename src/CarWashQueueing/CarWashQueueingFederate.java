@@ -45,11 +45,8 @@ public class CarWashQueueingFederate extends Federate {
         this.log("Published and Subscribed");
     }
 
-    void onWashPaid(int vehicleId) {
-    }
-
     void onGetClientLW(int vehicleId) {
-        this.log("GetClientLW(" + vehicleId + ")");
+        this.log("GetClientLW(vehicleId=" + vehicleId + ")");
 
         int vId = vehicleQueue.remove();
 
@@ -58,31 +55,42 @@ public class CarWashQueueingFederate extends Federate {
         }
     }
 
+    void onGoWash(int vehicleId) throws RTIexception {
+        this.log("GoWash(vehicleId=" + vehicleId + ")");
+        vehicleQueue.add(vehicleId);
+
+        int currentVehicleCount = vehicleQueue.size();
+        int earliestVehicleId = vehicleQueue.peek();
+        log("Updating CarWashQueue to currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId=" + earliestVehicleId);
+        carWashQueue.updateQueue(currentVehicleCount, earliestVehicleId);
+    }
+
     @Override
-    protected void processEvents() {
+    protected void processEvents() throws RTIexception {
         while (!events.isEmpty()) {
             Object event = events.remove();
 
-            if (event instanceof WashPaid) {
-                WashPaid washPaid = (WashPaid) event;
-                onWashPaid(washPaid.getVehicleId());
+            if (event instanceof GetClientLW) {
+                GetClientLW getClientLW = (GetClientLW) event;
+                onGetClientLW(getClientLW.getVehicleId());
+            } else if (event instanceof GoWash) {
+                GoWash goWash = (GoWash) event;
+                onGoWash(goWash.getVehicleId());
             }
         }
     }
 
     protected void runSimulation() throws RTIexception {
+        RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
+        int maxVehicles = 10;
+        carWashQueue = rtiObjectFactory.createCarWashQueue();
+        carWashQueue.setInitialAttributeValues(0, maxVehicles, 0);
+        log("Registered CarWashQueue(maxVehicles=" + maxVehicles + ")");
+        
         while (this.getTimeAsInt() < END_TIME) {
-            RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
-            int maxVehicles = 10;
-            carWashQueue = rtiObjectFactory.createCarWashQueue();
-            carWashQueue.setInitialAttributeValues(0, maxVehicles, 0);
-            log("Registered CarWashQueue(maxVehicles=" + maxVehicles + ")");
 
-            while (this.getTimeAsInt() < END_TIME) {
-
-                this.advanceTime(1.0);
-                log("Time Advanced to " + this.fedamb.getFederateTime());
-            }
+            this.advanceTime(1.0);
+            log("Time Advanced to " + this.fedamb.getFederateTime());
         }
     }
 

@@ -1,6 +1,8 @@
 package CarWashQueueing;
 
 import RtiObjects.Ambassador;
+import RtiObjects.GetClientLW;
+import RtiObjects.GoWash;
 import RtiObjects.WashPaid;
 import hla.rti1516e.*;
 import hla.rti1516e.exceptions.FederateInternalError;
@@ -35,16 +37,24 @@ public class CarWashQueueingFederateAmbassador extends Ambassador {
                                    OrderType receivedOrdering,
                                    FederateAmbassador.SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
-        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
+//        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
-        if (interactionClass.equals(this.federate.goWashInteractHandle)) {
+        if (interactionClass.equals(this.federate.getClientLWInteractHandle)) {
+            byte[] vehicleIdRaw = theParameters.get(this.federate.getClientLWVehicleIdParamHandle);
+            if (vehicleIdRaw == null) {
+                throw new RuntimeException("Required parameter not supplied: vehicleId");
+            }
+
+            int vehicleId = new Uint32(vehicleIdRaw).getValue();
+            this.federate.events.add(new GetClientLW(vehicleId));
+        } else if (interactionClass.equals(this.federate.goWashInteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.goWashVehicleIdParamHandle);
             if (vehicleIdRaw == null) {
                 throw new RuntimeException("Required parameter not supplied: vehicleId");
             }
 
             int vehicleId = new Uint32(vehicleIdRaw).getValue();
-            this.federate.events.add(new WashPaid(vehicleId));
+            this.federate.events.add(new GoWash(vehicleId));
         } else {
             throw new RuntimeException("A non-subscribed interaction was received: " + interactionClass);
         }

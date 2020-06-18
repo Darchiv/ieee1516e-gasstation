@@ -12,6 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class VehicleFederate extends Federate {
+    List<Vehicle> vehicles = new LinkedList<>();
+
     // NewClient interaction
     protected InteractionClassHandle newClientInteractHandle;
     protected ParameterHandle newClientVehicleIdParamHandle;
@@ -77,10 +79,32 @@ public class VehicleFederate extends Federate {
         rtiamb.sendInteraction(this.newClientInteractHandle, parameters, generateTag());
     }
 
-    void onFuelPaid(int vehicleId, int gasPumpId) {
-        log("Vehicle(id=" + vehicleId + ") has paid");
+    void sendGoWash(int vehicleId) throws RTIexception {
+        ParameterHandleValueMap parameters = rtiamb.getParameterHandleValueMapFactory().create(1);
+        Uint32 value = new Uint32(vehicleId);
+        parameters.put(this.goWashVehicleIdParamHandle, value.getByteArray());
+        rtiamb.sendInteraction(this.goWashInteractHandle, parameters, generateTag());
+    }
 
-        // TODO: If a Car, roll a dice to go washing
+    void onFuelPaid(int vehicleId, int gasPumpId) throws RTIexception {
+        Vehicle v = null;
+
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getId() == vehicleId) {
+                v = vehicle;
+                vehicles.remove(vehicle);
+                break;
+            }
+        }
+
+        int totalTime = totalTime = getTimeAsInt() - v.getTimeEntered();
+
+        log("Vehicle(id=" + vehicleId + ") has paid, total time on the station: " + totalTime);
+
+        if (v instanceof Car) {
+            log("Car(id=" + vehicleId + ") goes washing");
+            sendGoWash(vehicleId);
+        }
     }
 
     void onWashPaid(int vehicleId) {
@@ -105,7 +129,6 @@ public class VehicleFederate extends Federate {
     protected void runSimulation() throws RTIexception {
         RtiObjectFactory rtiObjectFactory = RtiObjectFactory.getFactory(rtiamb);
         int lastVehicleId = 1;
-        List<Vehicle> vehicles = new LinkedList<>();
 
         while (this.getTimeAsInt() < END_TIME) {
             if (this.random.nextInt(4) == 0) {

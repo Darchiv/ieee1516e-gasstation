@@ -60,7 +60,7 @@ public class EntryFederate extends Federate {
     }
 
     protected void onGetClientL1(int vehicleId) {
-        this.log("GetClientL1(" + vehicleId + ")");
+        this.log("GetClientL1(vehicleId=" + vehicleId + ")");
 
         int vId = vehicleQueue.remove();
 

@@ -6,9 +6,16 @@ import RtiObjects.RtiObjectFactory;
 import RtiObjects.WashPaid;
 import hla.rti1516e.InteractionClassHandle;
 import hla.rti1516e.ParameterHandle;
+import hla.rti1516e.ParameterHandleValueMap;
 import hla.rti1516e.exceptions.RTIexception;
+import util.Uint32;
 
 public class CarWashFederate extends Federate {
+    CarWashQueue carWashQueue;
+    boolean isBusy = false;
+    int finishTime = 0;
+    int currentVehicleId;
+
     // Washed interaction
     protected InteractionClassHandle washedInteractHandle;
     protected ParameterHandle washedVehicleIdParamHandle;
@@ -49,9 +56,6 @@ public class CarWashFederate extends Federate {
         this.log("Published and Subscribed");
     }
 
-    void onWashPaid(int vehicleId) {
-    }
-
     @Override
     protected void processEvents() throws RTIexception {
         while (!events.isEmpty()) {
@@ -67,11 +71,67 @@ public class CarWashFederate extends Federate {
         }
     }
 
-    void onUpdatedCarWashQueue(int currentVehicleCount, int earliestVehicleId) {
+    void sendGetClientLW(int vehicleId) throws RTIexception {
+        ParameterHandleValueMap parameters = rtiamb.getParameterHandleValueMapFactory().create(1);
+        Uint32 value = new Uint32(vehicleId);
+        parameters.put(this.getClientLWVehicleIdParamHandle, value.getByteArray());
+        rtiamb.sendInteraction(this.getClientLWInteractHandle, parameters, generateTag());
+    }
+
+    void sendWashed(int vehicleId) throws RTIexception {
+        ParameterHandleValueMap parameters = rtiamb.getParameterHandleValueMapFactory().create(1);
+        Uint32 value = new Uint32(vehicleId);
+        parameters.put(this.washedVehicleIdParamHandle, value.getByteArray());
+        rtiamb.sendInteraction(this.washedInteractHandle, parameters, generateTag());
+    }
+
+    void onWashPaid(int vehicleId) throws RTIexception {
+        log("Vehicle(id=" + vehicleId + ") has finished checking out");
+
+        isBusy = false;
+
+        if (carWashQueue.currentVehicleCount == 0) {
+            log("No Vehicle waiting for CarWash");
+        } else {
+            handleNextVehicle();
+        }
+    }
+
+    void handleNextVehicle() throws RTIexception {
+        if (carWashQueue.currentVehicleCount > 0 && !isBusy) {
+            int vehicleId = carWashQueue.earliestVehicleId;
+            finishTime = this.getTimeAsInt() + 10 + this.random.nextInt(20);
+
+            log("Adding Vehicle(id=" + vehicleId + ") to CarWash to finish at " + finishTime);
+
+            carWashQueue.currentVehicleCount -= 1;
+            currentVehicleId = vehicleId;
+            isBusy = true;
+            sendGetClientLW(vehicleId);
+        }
+    }
+
+    void onUpdatedCarWashQueue(int currentVehicleCount, int earliestVehicleId) throws RTIexception {
+        log("CarWashQueue(currentVehicleCount=" + currentVehicleCount + ", earliestVehicleId="
+                + earliestVehicleId + ") updated");
+
+        carWashQueue.currentVehicleCount = currentVehicleCount;
+        carWashQueue.earliestVehicleId = earliestVehicleId;
+
+        handleNextVehicle();
     }
 
     protected void runSimulation() throws RTIexception {
+        carWashQueue = new CarWashQueue(0, 10, 0);
+
         while (this.getTimeAsInt() < END_TIME) {
+            if (isBusy && finishTime <= this.getTimeAsInt()) {
+                int vehicleId = currentVehicleId;
+
+                log("CarWash finished washing Vehicle(id=" + vehicleId + ")");
+                finishTime = Integer.MAX_VALUE;
+                this.sendWashed(vehicleId);
+            }
 
             this.advanceTime(1.0);
             log("Time Advanced to " + this.fedamb.getFederateTime());
