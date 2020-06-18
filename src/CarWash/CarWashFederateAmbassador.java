@@ -36,7 +36,7 @@ public class CarWashFederateAmbassador extends Ambassador {
                                    OrderType receivedOrdering,
                                    FederateAmbassador.SupplementalReceiveInfo receiveInfo)
             throws FederateInternalError {
-        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
+//        super.receiveInteraction(interactionClass, theParameters, tag, sentOrdering, theTransport, time, receivedOrdering, receiveInfo);
 
         if (interactionClass.equals(this.federate.washPaidInteractHandle)) {
             byte[] vehicleIdRaw = theParameters.get(this.federate.washPaidVehicleIdParamHandle);
@@ -61,7 +61,7 @@ public class CarWashFederateAmbassador extends Ambassador {
                                        OrderType receivedOrdering,
                                        SupplementalReflectInfo reflectInfo)
             throws FederateInternalError {
-        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
+//        super.reflectAttributeValues(theObject, theAttributes, tag, sentOrdering, theTransport, time, receivedOrdering, reflectInfo);
 
         if (instanceToClassMap.get(theObject).equals(CarWashQueue.getClassHandle())) {
             Uint32 maxVehicles = null;
