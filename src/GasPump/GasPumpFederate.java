@@ -11,6 +11,8 @@ import util.Uint32;
 import java.util.*;
 
 public class GasPumpFederate extends Federate {
+
+    double averageWaitTime = 0;
     protected Map<Integer, FuelEnum> vehicleFuelTypeById = new HashMap<>();
     protected Map<Integer, Integer> vehicleTimeEnteredById = new HashMap<>();
     protected Map<Integer, Lane> gasPumpLane = new HashMap<>();
@@ -221,6 +223,14 @@ public class GasPumpFederate extends Federate {
         for (Integer wt : queueWaitingTimes) {
             System.out.print(wt + ", ");
         }
+        System.out.print("\r\n");
+
+        log("Average wait time: ");
+        for (Integer wt : queueWaitingTimes) {
+            averageWaitTime+=wt;
+        }
+        averageWaitTime = averageWaitTime/queueWaitingTimes.size();
+        System.out.print(averageWaitTime);
         System.out.print("\r\n");
 
     }
